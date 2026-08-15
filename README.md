@@ -86,8 +86,8 @@ The local and CI packaging command explicitly disables Electron Builder publishi
 Releases are built by GitHub Actions when a tag matching `vX.Y.Z` is pushed. The tag must match the version in `package.json`:
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.1
+git push origin v1.1.1
 ```
 
 The workflow builds Windows x64 and macOS x64/arm64 artifacts, generates release notes, and publishes them to one GitHub release. Initial builds are unsigned. Signing and macOS notarization are enabled automatically when the documented repository secrets are configured.

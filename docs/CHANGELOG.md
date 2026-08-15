@@ -1,5 +1,9 @@
 # Documentation and Implementation Changelog
 
+## 1.1.1 - 2026-08-16
+
+- Prepared the patch release with the corrected Electron Builder workflow that disables implicit publishing in platform jobs.
+
 ## 2026-08-16
 
 ### Release workflow fix
