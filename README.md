@@ -79,6 +79,8 @@ npm run make
 
 Windows produces `out/make/ApplePodcastDownloader-<version>-win-x64.exe` as an x64 portable application. macOS produces `out/make/ApplePodcastDownloader-<version>-mac-<arch>.dmg` and `.zip` files for x64 and arm64. macOS builds must run on macOS.
 
+The local and CI packaging command explicitly disables Electron Builder publishing. GitHub release publication is handled only by the workflow's final `publish` job, so unsigned builds without `GH_TOKEN` or signing credentials still complete successfully.
+
 ## GitHub releases
 
 Releases are built by GitHub Actions when a tag matching `vX.Y.Z` is pushed. The tag must match the version in `package.json`:

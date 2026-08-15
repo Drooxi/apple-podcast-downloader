@@ -63,6 +63,8 @@ The Builder configuration uses the explicit application ID `com.drooxi.apple-pod
 
 Releases are triggered by `v*` tags, and `scripts/check-release-version.cjs` requires the tag to match the `package.json` version. A single Ubuntu publication job creates the GitHub release and uploads artifacts collected from the platform jobs.
 
+Electron Builder is explicitly invoked with `--publish never` so a Git tag cannot trigger publication from a platform job without `GH_TOKEN`. Release creation remains centralized in the workflow's `publish` job.
+
 Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing uses `WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD`, and macOS signing/notarization additionally uses `MAC_CERTIFICATE_BASE64`, `MAC_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. Certificates are decoded only into temporary runner directories. Auto-update support remains out of scope.
 
 ## Renovate dependency updates

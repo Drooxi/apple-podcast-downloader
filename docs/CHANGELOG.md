@@ -1,5 +1,12 @@
 # Documentation and Implementation Changelog
 
+## 2026-08-16
+
+### Release workflow fix
+
+- Disabled Electron Builder's implicit tag publication with `--publish never`.
+- Kept GitHub release creation centralized in the final workflow job, allowing unsigned macOS builds to complete without `GH_TOKEN` or signing credentials.
+
 ## 1.1.0 - 2026-08-15
 
 - Published the reorganized and hardened Electron application with Apple Podcasts search, main-owned download destinations, secure `app://bundle` loading, and Electron Builder release targets.

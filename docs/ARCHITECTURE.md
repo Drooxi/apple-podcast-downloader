@@ -50,6 +50,8 @@ The renderer declares a restrictive Content Security Policy, uses system fonts a
 
 The packaging configuration is defined in `electron-builder.config.cjs`. `npm run make` first clears the generated `out/make/` directory, then builds with Electron Builder. Electron Builder creates a Windows x64 portable `.exe` and macOS DMG/ZIP distributables. The GitHub Actions release workflow builds each platform on its native runner and publishes the collected artifacts in one release job.
 
+The `make` script passes `--publish never` explicitly. Platform jobs only generate artifacts; the final workflow job is solely responsible for creating the GitHub release and uploading them. Code signing remains conditional and does not block unsigned artifacts when certificate secrets are absent.
+
 ## File responsibilities
 
 | File | Responsibility |
