@@ -43,9 +43,15 @@ The initial directory is the project-level `episodes/` folder. The user can repl
 - Any non-zero failed episode count is reported as a failed overall status.
 - Cancellation is represented separately from failure.
 
-## No packaging yet
+## Electron Forge distribution
 
-The first Electron version prioritizes local development and behavior validation. Installer configuration, code signing, auto-update support, and platform-specific packaging are deliberately deferred.
+Electron Forge is used for platform packaging. The Squirrel maker creates a Windows x64 `.exe` installer, while the DMG and ZIP makers create macOS x64/arm64 distributables. Builds run on native GitHub-hosted runners because DMG generation requires macOS.
+
+The npm package metadata includes a non-empty author and description because Squirrel requires both fields when creating the Windows installer.
+
+Releases are triggered by `v*` tags, and `scripts/check-release-version.cjs` requires the tag to match the `package.json` version. A single Ubuntu publication job creates the GitHub release and uploads artifacts collected from the platform jobs.
+
+Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing and macOS signing/notarization are activated by the corresponding GitHub secrets, including the macOS developer identity. Auto-update support remains out of scope.
 
 ## Current limitations to revisit
 

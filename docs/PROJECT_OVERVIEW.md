@@ -66,10 +66,16 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 - Cancellation through `AbortController`.
 - Basic Node.js unit tests.
 
+## Desktop distribution
+
+Electron Forge packages the application into a Windows x64 `.exe` installer and macOS x64/arm64 `.dmg` and `.zip` artifacts. GitHub Actions runs these builds on Windows and macOS runners when a `vX.Y.Z` tag is pushed. The tag must match the version in `package.json`; a final Ubuntu job creates the GitHub release with generated notes and uploads all artifacts.
+
+The initial workflow produces unsigned artifacts. Windows signing and macOS signing/notarization activate only when the documented GitHub secrets are provided.
+
 ## Scope currently excluded
 
 - Multiple podcast profiles or persisted podcast selection.
-- Installer generation or auto-updates.
+- Auto-updates.
 - Download queue management.
 - Pause/resume support.
 - Episode search, filtering, or playback.
@@ -79,7 +85,9 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 
 ## Current validation baseline
 
-- `npm test` contains seven tests for search URL construction, result normalization, filename sanitization, ID validation, and cancellation.
+- `npm test` contains nine tests for search URL construction, result normalization, filename sanitization, ID validation, cancellation, and release tag validation.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/`.
+- `npm run make` generates local platform distributables through Electron Forge.
+- `npm run check:release-version v1.0.0` validates a release tag against `package.json`.

@@ -1,0 +1,83 @@
+name: Release desktop builds
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: 22.12.0
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check:release-version
+      - run: npm test
+      - run: npm run make -- --platform=win32 --arch=x64
+        env:
+          WINDOWS_CERTIFICATE_FILE: ${{ secrets.WINDOWS_CERTIFICATE_FILE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: out/make/**/*.exe
+          if-no-files-found: error
+
+  macos:
+    name: macOS ${{ matrix.arch }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check:release-version
+      - run: npm test
+      - run: npm run make -- --platform=darwin --arch=${{ matrix.arch }}
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_DEVELOPER_IDENTITY: ${{ secrets.APPLE_DEVELOPER_IDENTITY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: |
+            out/make/**/*.dmg
+            out/make/**/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    runs-on: ubuntu-latest
+    needs: [windows, macos]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create release and upload artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          mapfile -t assets < <(find release-assets -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \) -print)
+          test "${#assets[@]}" -gt 0
+          gh release create "$TAG" "${assets[@]}" --generate-notes --repo "$GITHUB_REPOSITORY"

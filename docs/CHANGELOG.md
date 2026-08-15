@@ -2,6 +2,16 @@
 
 ## 2026-08-15
 
+### Desktop packaging and releases
+
+- Added Electron Forge packaging for Windows x64 `.exe` and macOS x64/arm64 `.dmg`/`.zip` artifacts.
+- Added generated native application icons and a release-tag/version consistency check.
+- Added a GitHub Actions workflow triggered by `v*` tags, with one final job publishing generated release notes and all platform artifacts.
+- Prepared conditional Windows signing and macOS signing/notarization without requiring secrets for initial unsigned builds.
+- Added the author and description metadata required by the Windows Squirrel maker.
+- Added release-version unit coverage and made GitHub artifact collection robust to nested artifact paths.
+- Ignored local Electron Forge output under `out/`.
+
 ### Podcast search and selection
 
 - Added Apple Podcasts search with French storefront parameters, three-character minimum, 500 ms debounce, and up to eight normalized results.

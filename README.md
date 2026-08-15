@@ -56,7 +56,24 @@ Then launch Electron with the generated build:
 npm start
 ```
 
-This project currently targets local development and does not include an installer or packaging configuration.
+To create a platform installer locally, use Electron Forge on the current operating system:
+
+```bash
+npm run make
+```
+
+Windows produces an x64 `.exe` installer. macOS produces `.dmg` and `.zip` files for the selected architecture. DMG builds must run on macOS.
+
+## GitHub releases
+
+Releases are built by GitHub Actions when a tag matching `vX.Y.Z` is pushed. The tag must match the version in `package.json`:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow builds Windows x64 and macOS x64/arm64 artifacts, generates release notes, and publishes them to one GitHub release. Initial builds are unsigned. Signing and macOS notarization are enabled automatically when the documented repository secrets are configured.
 
 ## Usage
 
@@ -100,13 +117,15 @@ npm test
 electron/
   main.cjs       Electron main process and IPC handlers
   preload.cjs    Secure renderer bridge
-src/
+  src/
   App.jsx        Main React interface
   main.jsx       React entry point
   styles.css     Application styling
 podcast-search.js Apple Podcasts catalog search logic
 rss-extract.js   RSS lookup and episode download logic
 test/            Node.js tests
+forge.config.cjs Electron Forge packaging configuration
+scripts/          Release validation and icon generation scripts
 ```
 
 ## License

@@ -46,7 +46,7 @@ The renderer does not receive Node.js APIs directly. `contextIsolation` is enabl
 
 `npm run build` writes the renderer to `dist/`. When `VITE_DEV_SERVER_URL` is absent, Electron loads `dist/index.html` from disk.
 
-There is currently no packaging step, installer, or production distribution configuration.
+The packaging configuration is defined in `forge.config.cjs`. Electron Forge builds a Windows x64 Squirrel installer and macOS DMG/ZIP distributables. The GitHub Actions release workflow builds each platform on its native runner and publishes the collected artifacts in one release job.
 
 ## File responsibilities
 
@@ -65,6 +65,10 @@ There is currently no packaging step, installer, or production distribution conf
 | `test/podcast-search.test.cjs` | Node.js tests for search parameters, normalization, and search cancellation. |
 | `test/rss-extract.test.cjs` | Node.js tests for filename behavior, download cancellation, and podcast ID validation. |
 | `README.md` | Public English setup and usage documentation. |
+| `forge.config.cjs` | Electron Forge makers, application identity, icons, and conditional signing/notarization configuration. |
+| `scripts/generate-icons.cjs` | Generates the versioned Windows ICO, macOS ICNS, and SVG source icon. |
+| `scripts/check-release-version.cjs` | Ensures a release tag matches the npm package version and exports the validation for tests. |
+| `.github/workflows/release.yml` | Builds Windows/macOS artifacts and publishes GitHub releases for `v*` tags. |
 
 ## IPC contract
 
