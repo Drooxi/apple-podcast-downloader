@@ -75,6 +75,17 @@ git push origin v1.0.0
 
 The workflow builds Windows x64 and macOS x64/arm64 artifacts, generates release notes, and publishes them to one GitHub release. Initial builds are unsigned. Signing and macOS notarization are enabled automatically when the documented repository secrets are configured.
 
+Optional repository secrets for signing are:
+
+- `WINDOWS_CERTIFICATE_BASE64`: base64-encoded Windows `.p12`/`.pfx` certificate.
+- `WINDOWS_CERTIFICATE_PASSWORD`: certificate password.
+- `APPLE_ID`: Apple Developer account email.
+- `APPLE_APP_SPECIFIC_PASSWORD`: app-specific password for notarization.
+- `APPLE_TEAM_ID`: Apple Developer team ID.
+- `APPLE_DEVELOPER_IDENTITY`: Developer ID Application certificate identity.
+
+The Windows certificate is decoded only on the GitHub runner and is never committed to the repository. Without these secrets, the workflow creates unsigned artifacts.
+
 ## Usage
 
 1. Open the application.
@@ -117,15 +128,18 @@ npm test
 electron/
   main.cjs       Electron main process and IPC handlers
   preload.cjs    Secure renderer bridge
-  src/
+src/
   App.jsx        Main React interface
   main.jsx       React entry point
   styles.css     Application styling
 podcast-search.js Apple Podcasts catalog search logic
 rss-extract.js   RSS lookup and episode download logic
-test/            Node.js tests
+test/
+  *.test.cjs     Node.js tests
+assets/icons/    Windows, macOS, and source application icons
 forge.config.cjs Electron Forge packaging configuration
-scripts/          Release validation and icon generation scripts
+scripts/         Release validation and icon generation scripts
+.github/workflows/release.yml GitHub release workflow
 ```
 
 ## License

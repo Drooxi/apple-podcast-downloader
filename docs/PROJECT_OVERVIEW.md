@@ -72,6 +72,8 @@ Electron Forge packages the application into a Windows x64 `.exe` installer and 
 
 The initial workflow produces unsigned artifacts. Windows signing and macOS signing/notarization activate only when the documented GitHub secrets are provided.
 
+The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. The Windows certificate is decoded into the temporary GitHub runner directory during the workflow.
+
 ## Scope currently excluded
 
 - Multiple podcast profiles or persisted podcast selection.

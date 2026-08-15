@@ -51,7 +51,7 @@ The npm package metadata includes a non-empty author and description because Squ
 
 Releases are triggered by `v*` tags, and `scripts/check-release-version.cjs` requires the tag to match the `package.json` version. A single Ubuntu publication job creates the GitHub release and uploads artifacts collected from the platform jobs.
 
-Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing and macOS signing/notarization are activated by the corresponding GitHub secrets, including the macOS developer identity. Auto-update support remains out of scope.
+Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing and macOS signing/notarization are activated by `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. The Windows certificate is decoded only into the temporary runner directory; the preparation step safely does nothing when the optional secret is absent. Auto-update support remains out of scope.
 
 ## Current limitations to revisit
 

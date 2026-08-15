@@ -11,6 +11,8 @@
 - Added the author and description metadata required by the Windows Squirrel maker.
 - Added release-version unit coverage and made GitHub artifact collection robust to nested artifact paths.
 - Ignored local Electron Forge output under `out/`.
+- Corrected the README project tree and documented all optional signing secrets.
+- Updated the Windows workflow to decode the certificate from a base64 secret on the temporary runner.
 
 ### Podcast search and selection
 
@@ -61,4 +63,4 @@
 - React/Vite renders the single-page downloader interface.
 - The preload bridge exposes directory selection, start/cancel actions, logs, and status events.
 - `rss-extract.js` supports both module use and direct CLI execution.
-- The repository has no installer or packaging workflow.
+- Electron Forge packages Windows and macOS artifacts, and GitHub Actions publishes tagged releases.
