@@ -25,6 +25,14 @@ function throwIfAborted(signal) {
     }
 }
 
+function validatePodcastId(podcastId) {
+    const normalizedId = String(podcastId ?? "").trim();
+    if (!/^\d+$/.test(normalizedId)) {
+        throw new Error("Un podcast doit être sélectionné avant le téléchargement.");
+    }
+    return normalizedId;
+}
+
 function removeFile(filePath) {
     try {
         if (fs.existsSync(filePath)) {
@@ -160,12 +168,13 @@ async function runDownload({
 } = {}) {
     const log = (message, level = "info") => onLog(message, level);
     throwIfAborted(signal);
+    const normalizedPodcastId = validatePodcastId(podcastId);
 
     fs.mkdirSync(outputDir, { recursive: true });
     log("Recherche du flux RSS...");
 
     const lookup = JSON.parse(
-        await get(`https://itunes.apple.com/lookup?id=${encodeURIComponent(podcastId)}`, signal),
+        await get(`https://itunes.apple.com/lookup?id=${encodeURIComponent(normalizedPodcastId)}`, signal),
     );
 
     if (!lookup.results?.length || !lookup.results[0].feedUrl) {
@@ -238,4 +247,5 @@ module.exports = {
     DownloadCancelledError,
     runDownload,
     sanitizeFilename,
+    validatePodcastId,
 };

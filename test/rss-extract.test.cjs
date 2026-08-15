@@ -4,6 +4,7 @@ const {
     DownloadCancelledError,
     runDownload,
     sanitizeFilename,
+    validatePodcastId,
 } = require("../rss-extract.js");
 
 test("sanitizeFilename removes characters invalides sous Windows", () => {
@@ -21,4 +22,12 @@ test("runDownload respecte un signal déjà annulé", async () => {
         () => runDownload({ signal: controller.signal }),
         DownloadCancelledError,
     );
+});
+
+test("validatePodcastId refuse un identifiant absent", () => {
+    assert.throws(
+        () => validatePodcastId(""),
+        /Un podcast doit être sélectionné/,
+    );
+    assert.equal(validatePodcastId(" 1463322273 "), "1463322273");
 });

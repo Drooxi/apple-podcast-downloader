@@ -1,10 +1,11 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("podcastDownloader", {
+  searchPodcasts: (term) => ipcRenderer.invoke("podcast:search", { term }),
   getDefaultDirectory: () => ipcRenderer.invoke("download:default-directory"),
   selectDirectory: () => ipcRenderer.invoke("download:select-directory"),
-  startDownload: (outputDirectory) =>
-    ipcRenderer.invoke("download:start", { outputDirectory }),
+  startDownload: ({ outputDirectory, podcastId }) =>
+    ipcRenderer.invoke("download:start", { outputDirectory, podcastId }),
   cancelDownload: () => ipcRenderer.invoke("download:cancel"),
   onLog: (callback) => {
     const listener = (_event, payload) => callback(payload);

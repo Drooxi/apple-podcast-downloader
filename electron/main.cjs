@@ -1,9 +1,18 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const path = require("path");
-const { runDownload, DownloadCancelledError } = require("../rss-extract.js");
+const {
+  runDownload,
+  DownloadCancelledError,
+  validatePodcastId,
+} = require("../rss-extract.js");
+const {
+  searchPodcasts,
+  PodcastSearchCancelledError,
+} = require("../podcast-search.js");
 
 let mainWindow;
 let activeDownload = null;
+let activeSearchController = null;
 
 const defaultOutputDirectory = path.resolve(__dirname, "..", "episodes");
 
@@ -15,10 +24,11 @@ function sendToRenderer(channel, payload) {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1120,
-    height: 760,
-    minWidth: 820,
-    minHeight: 620,
+    width: 1180,
+    height: 900,
+    minWidth: 860,
+    minHeight: 760,
+    autoHideMenuBar: true,
     title: "Apple Podcast Downloader",
     backgroundColor: "#120b1d",
     webPreferences: {
@@ -27,6 +37,8 @@ function createWindow() {
       preload: path.join(__dirname, "preload.cjs"),
     },
   });
+
+  mainWindow.setMenuBarVisibility(false);
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL;
 
@@ -42,6 +54,39 @@ function createWindow() {
 }
 
 function registerIpcHandlers() {
+  ipcMain.handle("podcast:search", async (_event, { term } = {}) => {
+    if (activeSearchController) {
+      activeSearchController.abort();
+    }
+
+    const normalizedTerm = String(term || "").trim();
+    if (normalizedTerm.length < 3) {
+      activeSearchController = null;
+      return [];
+    }
+
+    const controller = new AbortController();
+    activeSearchController = controller;
+
+    try {
+      return await searchPodcasts(normalizedTerm, {
+        country: "fr",
+        lang: "fr_fr",
+        limit: 8,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof PodcastSearchCancelledError || controller.signal.aborted) {
+        return [];
+      }
+      throw error;
+    } finally {
+      if (activeSearchController === controller) {
+        activeSearchController = null;
+      }
+    }
+  });
+
   ipcMain.handle("download:default-directory", () => defaultOutputDirectory);
 
   ipcMain.handle("download:select-directory", async () => {
@@ -54,10 +99,12 @@ function registerIpcHandlers() {
     return result.canceled ? null : result.filePaths[0];
   });
 
-  ipcMain.handle("download:start", async (event, { outputDirectory }) => {
+  ipcMain.handle("download:start", async (event, { outputDirectory, podcastId } = {}) => {
     if (activeDownload) {
       throw new Error("Un téléchargement est déjà en cours.");
     }
+
+    const normalizedPodcastId = validatePodcastId(podcastId);
 
     const controller = new AbortController();
     activeDownload = { controller, sender: event.sender };
@@ -66,6 +113,7 @@ function registerIpcHandlers() {
     try {
       const result = await runDownload({
         outputDir: outputDirectory || defaultOutputDirectory,
+        podcastId: normalizedPodcastId,
         signal: controller.signal,
         onLog: (message, level = "info") => {
           if (!event.sender.isDestroyed()) {
@@ -126,6 +174,9 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", () => {
+  if (activeSearchController) {
+    activeSearchController.abort();
+  }
   if (activeDownload) {
     activeDownload.controller.abort();
   }

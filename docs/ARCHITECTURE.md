@@ -29,6 +29,8 @@
 └──────────────────────────────┘
 ```
 
+The main process also imports `podcast-search.js` for Apple catalog searches. Search requests are kept in the main process and are exposed to React through the preload bridge.
+
 The renderer does not receive Node.js APIs directly. `contextIsolation` is enabled and `nodeIntegration` is disabled in the `BrowserWindow` configuration.
 
 ## Startup modes
@@ -53,13 +55,15 @@ There is currently no packaging step, installer, or production distribution conf
 | `package.json` | Dependencies and development/build commands. |
 | `index.html` | Vite HTML shell and document title. |
 | `vite.config.mjs` | React plugin and `dist/` build output. |
-| `electron/main.cjs` | Electron lifecycle, window, native folder dialog, download orchestration, and status IPC. |
+| `electron/main.cjs` | Electron lifecycle, menu-hidden window, native folder dialog, podcast search, download orchestration, and status IPC. |
 | `electron/preload.cjs` | Small renderer-facing API built with `contextBridge`. |
 | `src/main.jsx` | React root mounting and global stylesheet import. |
 | `src/App.jsx` | Page layout, UI state, IPC event subscriptions, and user actions. |
 | `src/styles.css` | Visual system, responsive layout, and status styles. |
+| `podcast-search.js` | Apple catalog search URL construction, HTTPS requests, cancellation, and result normalization. |
 | `rss-extract.js` | Apple lookup, RSS parsing, HTTPS downloads, cancellation, file cleanup, and CLI compatibility. |
-| `test/rss-extract.test.cjs` | Node.js tests for pure filename behavior and cancellation preconditions. |
+| `test/podcast-search.test.cjs` | Node.js tests for search parameters, normalization, and search cancellation. |
+| `test/rss-extract.test.cjs` | Node.js tests for filename behavior, download cancellation, and podcast ID validation. |
 | `README.md` | Public English setup and usage documentation. |
 
 ## IPC contract
@@ -68,9 +72,10 @@ There is currently no packaging step, installer, or production distribution conf
 
 | Channel | Payload | Result/behavior |
 | --- | --- | --- |
+| `podcast:search` | `{ term }` | Searches the French Apple Podcasts catalog; aborts the previous search and returns normalized results. |
 | `download:default-directory` | none | Returns the absolute `episodes/` path next to the project. |
 | `download:select-directory` | none | Opens a native directory picker and returns a path or `null`. |
-| `download:start` | `{ outputDirectory }` | Runs one download. Rejects if another run is active. |
+| `download:start` | `{ outputDirectory, podcastId }` | Runs one download for the selected Apple ID. Rejects if no valid podcast ID or another run is active. |
 | `download:cancel` | none | Aborts the active `AbortController`; returns `true` when a run existed. |
 
 ### Main to renderer
@@ -96,3 +101,24 @@ running ── cancel ──► cancelled
 ```
 
 `activeDownload` in the main process is the single-run guard and owns the active `AbortController`.
+
+## Podcast search flow
+
+```text
+user types 3+ characters
+          │
+          ▼ 500 ms debounce
+React calls podcast:search
+          │
+          ▼
+main aborts previous search and calls Apple Search API
+          │
+          ▼
+normalized suggestions: id, name, author, artworkUrl
+          │
+          ▼
+user selects result
+          │
+          ▼
+download:start receives selected podcastId
+```

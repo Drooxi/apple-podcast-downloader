@@ -2,11 +2,13 @@
 
 A lightweight Electron desktop application for discovering and downloading podcast episodes from an Apple Podcasts RSS feed.
 
-The app provides a simple React interface inspired by Apple Podcasts, with a destination folder picker, live download logs, and cancellation support.
+The app provides a simple React interface inspired by Apple Podcasts, with podcast search and selection, a destination folder picker, live download logs, and cancellation support.
 
 ## Features
 
 - Electron desktop application with a React/Vite renderer.
+- Apple Podcasts search with autocomplete suggestions.
+- Podcast selection with name, author, and artwork preview.
 - Apple Podcasts RSS feed lookup.
 - MP3 episode downloads to a folder of your choice.
 - Live activity log during downloads.
@@ -59,10 +61,12 @@ This project currently targets local development and does not include an install
 ## Usage
 
 1. Open the application.
-2. Review or change the destination folder.
-3. Click **Start Download**.
-4. Follow the live activity log.
-5. Click **Cancel** if the download needs to be stopped.
+2. Search for a podcast by entering at least three characters.
+3. Select a podcast suggestion to confirm its Apple ID.
+4. Review or change the destination folder.
+5. Click **Lancer le téléchargement**.
+6. Follow the live activity log.
+7. Click **Annuler** if the download needs to be stopped.
 
 The default destination is the project’s `episodes/` directory. Downloaded MP3 files are ignored by Git.
 
@@ -100,6 +104,7 @@ src/
   App.jsx        Main React interface
   main.jsx       React entry point
   styles.css     Application styling
+podcast-search.js Apple Podcasts catalog search logic
 rss-extract.js   RSS lookup and episode download logic
 test/            Node.js tests
 ```

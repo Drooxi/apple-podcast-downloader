@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const STATUS_LABELS = {
   idle: "Prêt à télécharger",
@@ -13,16 +13,40 @@ function formatPath(value) {
   return value.length > 68 ? `…${value.slice(-65)}` : value;
 }
 
+function PodcastArtwork({ podcast, className = "" }) {
+  const initial = podcast.name?.trim().charAt(0).toUpperCase() || "P";
+
+  return (
+    <span className={`podcast-artwork ${className}`}>
+      <span className="podcast-artwork-fallback">{initial}</span>
+      {podcast.artworkUrl && (
+        <img
+          src={podcast.artworkUrl}
+          alt={`Illustration de ${podcast.name}`}
+          onError={(event) => {
+            event.currentTarget.hidden = true;
+          }}
+        />
+      )}
+    </span>
+  );
+}
+
 function App() {
   const [outputDirectory, setOutputDirectory] = useState("");
   const [status, setStatus] = useState("idle");
   const [statusMessage, setStatusMessage] = useState("");
   const [logs, setLogs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchState, setSearchState] = useState("idle");
+  const [searchError, setSearchError] = useState("");
+  const [selectedPodcast, setSelectedPodcast] = useState(null);
+  const searchRequest = useRef(0);
 
   const isRunning = status === "running";
-  const canStart = Boolean(outputDirectory) && !isRunning;
+  const canStart = Boolean(outputDirectory && selectedPodcast?.id && !isRunning);
   const statusLabel = STATUS_LABELS[status] || STATUS_LABELS.idle;
-
   const statusClass = useMemo(() => `status status-${status}`, [status]);
 
   useEffect(() => {
@@ -53,6 +77,73 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const term = searchTerm.trim();
+    const requestId = ++searchRequest.current;
+
+    if (selectedPodcast && term === selectedPodcast.name) {
+      setSearchResults([]);
+      setSearchState("selected");
+      setSearchError("");
+      return undefined;
+    }
+
+    if (term.length < 3) {
+      setSearchResults([]);
+      setSearchState(term ? "hint" : "idle");
+      setSearchError("");
+      window.podcastDownloader.searchPodcasts("");
+      return undefined;
+    }
+
+    setSearchState("loading");
+    setSearchError("");
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const results = await window.podcastDownloader.searchPodcasts(term);
+        if (requestId !== searchRequest.current) return;
+
+        setSearchResults(results);
+        setSearchState(results.length ? "results" : "empty");
+      } catch (error) {
+        if (requestId !== searchRequest.current) return;
+
+        setSearchResults([]);
+        setSearchState("error");
+        setSearchError(error.message || "La recherche est indisponible.");
+      }
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [searchTerm, selectedPodcast]);
+
+  function handleSearchChange(event) {
+    const value = event.target.value;
+    setSearchTerm(value);
+
+    if (selectedPodcast && value !== selectedPodcast.name) {
+      setSelectedPodcast(null);
+    }
+  }
+
+  function handleSelectPodcast(podcast) {
+    setSelectedPodcast(podcast);
+    setSearchTerm(podcast.name);
+    setSearchResults([]);
+    setSearchState("selected");
+    setSearchError("");
+  }
+
+  function handleChangePodcast() {
+    if (isRunning) return;
+    setSelectedPodcast(null);
+    setSearchTerm("");
+    setSearchResults([]);
+    setSearchState("idle");
+    setSearchError("");
+  }
+
   async function handleSelectDirectory() {
     if (isRunning) return;
     const selectedDirectory = await window.podcastDownloader.selectDirectory();
@@ -70,7 +161,10 @@ function App() {
     setStatusMessage("");
 
     try {
-      await window.podcastDownloader.startDownload(outputDirectory);
+      await window.podcastDownloader.startDownload({
+        outputDirectory,
+        podcastId: selectedPodcast.id,
+      });
     } catch (error) {
       setStatus("failed");
       setStatusMessage(error.message || "Une erreur inattendue est survenue.");
@@ -114,6 +208,75 @@ function App() {
               <span className="status-dot" />
               {statusLabel}
             </span>
+          </div>
+
+          <div className="podcast-search-section">
+            <label className="field-label search-label" htmlFor="podcast-search">
+              Rechercher un podcast
+            </label>
+            <div className="search-input-shell">
+              <span className="search-icon" aria-hidden="true">⌕</span>
+              <input
+                id="podcast-search"
+                type="search"
+                value={searchTerm}
+                placeholder="Nom du podcast…"
+                autoComplete="off"
+                disabled={isRunning}
+                onChange={handleSearchChange}
+              />
+              {searchState === "loading" && <span className="search-spinner" aria-label="Recherche en cours" />}
+            </div>
+
+            {!isRunning && searchState === "hint" && (
+              <p className="search-message search-hint">Saisissez au moins 3 caractères.</p>
+            )}
+            {!isRunning && searchState === "error" && (
+              <p className="search-message search-error" role="alert">{searchError}</p>
+            )}
+            {!isRunning && searchState === "empty" && (
+              <p className="search-message">Aucun podcast trouvé pour cette recherche.</p>
+            )}
+
+            {!isRunning && !selectedPodcast && searchResults.length > 0 && (
+              <div className="search-results" role="listbox" aria-label="Suggestions de podcasts">
+                {searchResults.map((podcast) => (
+                  <button
+                    className="search-result"
+                    type="button"
+                    role="option"
+                    key={podcast.id}
+                    onClick={() => handleSelectPodcast(podcast)}
+                  >
+                    <PodcastArtwork podcast={podcast} />
+                    <span className="search-result-copy">
+                      <strong>{podcast.name}</strong>
+                      <span>{podcast.author}</span>
+                    </span>
+                    <span className="search-result-arrow" aria-hidden="true">→</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedPodcast && (
+              <div className="selected-podcast" aria-live="polite">
+                <PodcastArtwork podcast={selectedPodcast} className="selected-podcast-artwork" />
+                <span className="selected-podcast-copy">
+                  <span className="field-label">Podcast sélectionné</span>
+                  <strong>{selectedPodcast.name}</strong>
+                  <span>{selectedPodcast.author}</span>
+                </span>
+                <button
+                  className="change-button"
+                  type="button"
+                  onClick={handleChangePodcast}
+                  disabled={isRunning}
+                >
+                  Changer
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="destination-row">

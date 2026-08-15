@@ -16,30 +16,40 @@ The application opens on a single React page titled **Apple Podcast Downloader**
 - system-style typography and compact metadata labels;
 - an activity log styled like a terminal feed.
 
+The Electron application menu bar is hidden to keep the window focused on the downloader interface.
+
+The default Electron window is sized to `1180×900` with a `860×760` minimum so the initial screen fits without page-level vertical scrolling. Only the activity log has its own internal scroll area.
+
 The user can:
 
-1. Review the default `episodes/` output directory.
-2. Select another directory through the native Electron folder picker.
-3. Start the download with **Lancer le téléchargement**.
-4. Watch RSS lookup, episode, and file download messages in the activity log.
-5. Cancel an active download with **Annuler**.
+1. Search Apple Podcasts by name from the French storefront.
+2. Select a suggestion showing the podcast name, author, and artwork.
+3. Review the selected podcast before downloading.
+4. Review the default `episodes/` output directory or select another directory through the native Electron folder picker.
+5. Start the download with **Lancer le téléchargement**.
+6. Watch RSS lookup, episode, and file download messages in the activity log.
+7. Cancel an active download with **Annuler**.
+
+The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow.
 
 The interface labels are currently in French, while the public README is in English.
 
 ## Runtime behavior
 
-The configured podcast ID is `1463322273`, defined as `DEFAULT_PODCAST_ID` in `rss-extract.js`.
+The command-line downloader keeps `1463322273` as its default podcast ID, defined as `DEFAULT_PODCAST_ID` in `rss-extract.js`. The Electron interface requires the user to select an Apple Podcasts result and uses that result’s ID.
 
 The downloader:
 
-1. Calls the Apple Podcasts lookup endpoint.
-2. Extracts the feed URL from the lookup response.
-3. Fetches and parses the RSS XML with `fast-xml-parser`.
-4. Iterates over the feed items.
-5. Sanitizes each episode title into a Windows-safe filename.
-6. Downloads each enclosure URL into the selected directory.
-7. Removes a partial file when a download fails or is cancelled.
-8. Reports totals as `{ total, downloaded, failed }`.
+1. Searches the Apple iTunes Search API when the user types at least three characters.
+2. Normalizes valid podcast results into an Apple ID, name, author, and artwork URL.
+3. Calls the Apple Podcasts lookup endpoint with the selected Apple ID.
+4. Extracts the feed URL from the lookup response.
+5. Fetches and parses the RSS XML with `fast-xml-parser`.
+6. Iterates over the feed items.
+7. Sanitizes each episode title into a Windows-safe filename.
+8. Downloads each enclosure URL into the selected directory.
+9. Removes a partial file when a download fails or is cancelled.
+10. Reports totals as `{ total, downloaded, failed }`.
 
 Episode-level errors are logged and the remaining episodes continue. A run with one or more episode errors ends with a failed UI status. A lookup, RSS, or cancellation error stops the run immediately.
 
@@ -49,6 +59,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 - React/Vite renderer.
 - Secure preload bridge.
 - Native destination folder selection.
+- Apple Podcasts search and result selection.
 - RSS lookup and XML parsing.
 - Sequential MP3 downloads.
 - Progress logs and status updates.
@@ -57,7 +68,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 
 ## Scope currently excluded
 
-- Podcast ID input or multiple podcast profiles.
+- Multiple podcast profiles or persisted podcast selection.
 - Installer generation or auto-updates.
 - Download queue management.
 - Pause/resume support.
@@ -68,7 +79,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 
 ## Current validation baseline
 
-- `npm test` contains two tests for filename sanitization and pre-aborted downloads.
+- `npm test` contains seven tests for search URL construction, result normalization, filename sanitization, ID validation, and cancellation.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/`.
