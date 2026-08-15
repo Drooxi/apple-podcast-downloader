@@ -44,7 +44,7 @@ The renderer does not receive Node.js APIs directly. `contextIsolation` is enabl
 
 ### Built application
 
-`npm run build` writes the renderer to `dist/`. When `VITE_DEV_SERVER_URL` is absent, Electron loads `dist/index.html` from disk.
+`npm run build` writes the renderer to `dist/` using Vite 8 and `@vitejs/plugin-react` 6. When `VITE_DEV_SERVER_URL` is absent, Electron loads `dist/index.html` from disk.
 
 The packaging configuration is defined in `forge.config.cjs`. Electron Forge builds a Windows x64 Squirrel installer and macOS DMG/ZIP distributables. The GitHub Actions release workflow builds each platform on its native runner and publishes the collected artifacts in one release job.
 
@@ -52,7 +52,7 @@ The packaging configuration is defined in `forge.config.cjs`. Electron Forge bui
 
 | File | Responsibility |
 | --- | --- |
-| `package.json` | Dependencies and development/build commands. |
+| `package.json` | Runtime dependencies, development tooling (including Renovate), Node/npm engine constraints, Electron runtime installation, and build commands. |
 | `index.html` | Vite HTML shell and document title. |
 | `vite.config.mjs` | React plugin and `dist/` build output. |
 | `electron/main.cjs` | Electron lifecycle, menu-hidden window, native folder dialog, podcast search, download orchestration, and status IPC. |

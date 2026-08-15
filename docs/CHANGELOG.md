@@ -15,6 +15,13 @@
 - Updated the Windows workflow to decode the certificate from a base64 secret on the temporary runner.
 - Added Renovate configuration for scheduled, grouped npm dependency updates without auto-merge.
 - Installed mise 2026.8.6 on Windows and added `mise.toml` with the project Node.js version and task aliases.
+- Migrated the project runtime from Node.js 22.12.0 to Node.js 24.19.0 LTS and npm 11.17.0.
+- Updated Vite to 8.2.1, `@vitejs/plugin-react` to 6.0.5, Electron to 43.4.0, Renovate to 44.30.3, and refreshed the npm lockfile.
+- Classified Renovate as development tooling so its native `re2` dependency is excluded from packaged application dependencies.
+- Confirmed the local Electron smoke test starts successfully and the Windows x64 Forge packaging completes after excluding Renovate's native tooling from production dependencies; the generated installer is `ApplePodcastDownloaderSetup.exe`.
+- Validated `npm ci`, nine passing Node.js tests, the Vite build, release-tag matching, Renovate configuration, and an empty `npm outdated` report.
+- Recorded the remaining npm audit report from the refreshed tree: 29 vulnerabilities (3 low, 25 high, 1 critical) require separate dependency/security review.
+- Added an explicit Electron runtime postinstall step so clean npm installations are ready to start and package the desktop application.
 
 ### Podcast search and selection
 

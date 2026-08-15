@@ -1,7 +1,7 @@
 min_version = "2026.8.0"
 
 [tools]
-node = "22.12.0"
+node = "24.19.0"
 
 [tasks.dev]
 run = "npm run dev"

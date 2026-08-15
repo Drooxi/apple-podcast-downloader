@@ -59,7 +59,13 @@ Renovate is configured through `renovate.json` for weekly npm dependency checks.
 
 ## mise project environment
 
-mise is used as the project tool-version manager. `mise.toml` pins Node.js to `22.12.0`, matching the release workflow and the supported Vite runtime, while npm remains the package manager. mise task aliases call the existing npm scripts instead of duplicating project behavior.
+mise is used as the project tool-version manager. `mise.toml` pins Node.js to `24.19.0`, matching the release workflow and the supported Vite 8 runtime, while npm `11.17.0` remains the package manager. mise task aliases call the existing npm scripts instead of duplicating project behavior.
+
+## Node.js 24 and dependency baseline
+
+Node.js 24.19.0 LTS is the supported runtime baseline. Direct dependencies are refreshed to current stable releases, including Vite 8, `@vitejs/plugin-react` 6, Electron 43.4, Renovate 44, and their compatible transitive lockfile dependencies. The `engines` field rejects runtimes older than Node 24.19/npm 11.17.
+
+Electron 43.4.0 exposes its runtime download as the `install-electron` binary rather than a package lifecycle script in the installed package metadata. The project therefore runs it from `postinstall` so `npm ci` consistently prepares the runtime needed by Electron Forge and local startup.
 
 ## Current limitations to revisit
 

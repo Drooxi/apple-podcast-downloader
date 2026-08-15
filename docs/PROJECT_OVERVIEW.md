@@ -94,4 +94,5 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - `npm run make` generates local platform distributables through Electron Forge.
 - `npm run check:release-version v1.0.0` validates a release tag against `package.json`.
 - Renovate checks npm dependencies weekly and opens grouped pull requests for non-major updates.
-- `mise.toml` pins Node.js to `22.12.0` and exposes `dev`, `test`, `build`, and `make` tasks through mise.
+- `mise.toml` pins Node.js to `24.19.0` and exposes `dev`, `test`, `build`, and `make` tasks through mise.
+- The current toolchain uses npm `11.17.0`, Vite `8.2.1`, and `@vitejs/plugin-react` `6.0.5`.
