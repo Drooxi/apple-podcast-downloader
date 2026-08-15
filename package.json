@@ -18,7 +18,8 @@
   "dependencies": {
     "fast-xml-parser": "^5.10.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "renovate": "^39.264.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.2",

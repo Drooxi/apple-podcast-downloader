@@ -93,3 +93,4 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - `npm start` loads the built renderer from `dist/`.
 - `npm run make` generates local platform distributables through Electron Forge.
 - `npm run check:release-version v1.0.0` validates a release tag against `package.json`.
+- Renovate checks npm dependencies weekly and opens grouped pull requests for non-major updates.

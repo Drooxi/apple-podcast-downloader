@@ -53,6 +53,10 @@ Releases are triggered by `v*` tags, and `scripts/check-release-version.cjs` req
 
 Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing and macOS signing/notarization are activated by `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. The Windows certificate is decoded only into the temporary runner directory; the preparation step safely does nothing when the optional secret is absent. Auto-update support remains out of scope.
 
+## Renovate dependency updates
+
+Renovate is configured through `renovate.json` for weekly npm dependency checks. Minor and patch updates are grouped into a single pull request, while major updates remain separate for deliberate review. A dependency dashboard, pull request limits, and the `dependencies` label keep maintenance visible without enabling automatic merges.
+
 ## Current limitations to revisit
 
 - The CLI podcast ID is still hard-coded; the Electron UI now selects an ID through Apple search.

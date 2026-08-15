@@ -13,6 +13,7 @@
 - Ignored local Electron Forge output under `out/`.
 - Corrected the README project tree and documented all optional signing secrets.
 - Updated the Windows workflow to decode the certificate from a base64 secret on the temporary runner.
+- Added Renovate configuration for scheduled, grouped npm dependency updates without auto-merge.
 
 ### Podcast search and selection
 
