@@ -70,6 +70,7 @@ The packaging configuration is defined in `forge.config.cjs`. Electron Forge bui
 | `scripts/check-release-version.cjs` | Ensures a release tag matches the npm package version and exports the validation for tests. |
 | `.github/workflows/release.yml` | Builds Windows/macOS artifacts and publishes GitHub releases for `v*` tags. |
 | `renovate.json` | Configures scheduled npm dependency updates, grouping, limits, and review labels. |
+| `mise.toml` | Pins the project Node.js version and defines mise task aliases for development, tests, builds, and packaging. |
 
 ## IPC contract
 

@@ -20,6 +20,7 @@ The app provides a simple React interface inspired by Apple Podcasts, with podca
 
 - Node.js 20.19+ or 22.12+.
 - npm.
+- mise 2026.8+ (recommended for the project-managed Node.js version).
 - An internet connection to access the Apple Podcasts lookup API, RSS feed, and audio files.
 
 ## Installation
@@ -31,6 +32,15 @@ git clone https://github.com/Drooxi/apple-podcast-downloader.git
 cd apple-podcast-downloader
 npm install
 ```
+
+The project includes `mise.toml`, which pins Node.js to `22.12.0` and provides shortcuts for development tasks. After installing mise, from the project directory run:
+
+```powershell
+mise trust
+mise install
+```
+
+You can then run `mise run dev`, `mise run test`, `mise run build`, or `mise run make`.
 
 ## Development
 

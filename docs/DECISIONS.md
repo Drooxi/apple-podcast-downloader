@@ -57,6 +57,10 @@ Signing is conditional: unsigned artifacts are valid for the initial workflow, w
 
 Renovate is configured through `renovate.json` for weekly npm dependency checks. Minor and patch updates are grouped into a single pull request, while major updates remain separate for deliberate review. A dependency dashboard, pull request limits, and the `dependencies` label keep maintenance visible without enabling automatic merges.
 
+## mise project environment
+
+mise is used as the project tool-version manager. `mise.toml` pins Node.js to `22.12.0`, matching the release workflow and the supported Vite runtime, while npm remains the package manager. mise task aliases call the existing npm scripts instead of duplicating project behavior.
+
 ## Current limitations to revisit
 
 - The CLI podcast ID is still hard-coded; the Electron UI now selects an ID through Apple search.
