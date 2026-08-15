@@ -8,9 +8,11 @@ The application is a desktop utility, so Electron provides the native window and
 
 The renderer uses a small `window.podcastDownloader` API exposed by `electron/preload.cjs`. Direct Node access is disabled. New native capabilities should be added as narrow methods and named IPC channels, not by exposing `ipcRenderer` or arbitrary Electron objects.
 
+The preload remains self-contained because it runs in a sandbox-compatible context. Main-process channel definitions are kept in a separate module and mirrored in preload with automated contract tests.
+
 ## Direct module integration for downloads
 
-The Electron main process imports `runDownload` from `rss-extract.js` instead of spawning a second Node process. This keeps the integration small and allows the main process to receive structured logs and results directly.
+The Electron main process calls the reusable downloader core directly instead of spawning a second Node process. `rss-extract.js` remains a CLI façade so the original command remains available while Electron receives structured logs and results.
 
 The downloader remains executable as a CLI through its `require.main === module` branch so the original script workflow is preserved.
 
@@ -35,6 +37,16 @@ The main process creates one `AbortController` per run. Network requests receive
 ## Output directory
 
 The initial directory is the project-level `episodes/` folder. The user can replace it through Electron’s native directory picker. The directory is created recursively before the RSS lookup/download work starts.
+
+The selected directory is now owned by the main process. The renderer can request or change it through IPC but cannot supply an arbitrary output path to `download:start`.
+
+Window cleanup captures the sender identifier before destruction and cancels operations without reading `webContents` from the `closed` event.
+
+## Electron application protocol
+
+The packaged renderer is served through the secured standard `app://bundle` protocol. The handler maps only files inside `dist/`, rejects traversal and unknown hosts, and allows the main process to validate renderer origins without relying on `file://`.
+
+Vite uses relative asset URLs so the same build works from the custom protocol. A renderer CSP blocks arbitrary scripts, frames and objects while allowing only local application code, Vite development HMR and HTTPS podcast artwork.
 
 ## Error policy
 
@@ -70,7 +82,7 @@ Electron 43.4.0 exposes its runtime download as the `install-electron` binary ra
 ## Current limitations to revisit
 
 - The CLI podcast ID is still hard-coded; the Electron UI now selects an ID through Apple search.
-- The output path is accepted through the bridge without a separate allowlist; the UI normally supplies a native-picker result or the known default.
+- The main process currently trusts the native directory picker result as the selected destination; the renderer cannot inject a path into `download:start`, but a future policy could restrict writable locations further.
 - There is no retry policy for transient HTTP failures.
 - There is no byte-level progress indicator.
 - The UI has no automated component or end-to-end test coverage.

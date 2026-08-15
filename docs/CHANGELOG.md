@@ -2,6 +2,21 @@
 
 ## 2026-08-15
 
+### Architecture and security refactor
+
+- Extracted shared HTTP, Apple search and download logic into `core/`, while preserving the root CLI and compatibility façades.
+- Prepared a dedicated Electron window, application protocol, IPC registration layer and cancellable operation managers.
+- Moved destination-directory ownership to the main process and documented the new IPC contract.
+- Added the shared HTTPS client, bounded redirects and centralized partial-file cleanup.
+- Added explicit sandboxing, `app://bundle` loading, CSP/navigation restrictions and sender validation for privileged IPC.
+- Switched Vite output to relative asset URLs and removed the external Google Fonts dependency from the renderer.
+- Split the React page into components/hooks and moved renderer API, path formatting and download/search state into dedicated modules.
+- Replaced remaining renderer font references with local system font stacks for offline packaged operation.
+- Added boundary tests for the application protocol, IPC handlers, managers, preload wrappers and shared HTTP cancellation.
+- Finalized the documentation baseline for the secured `app://bundle` renderer, main-owned destination directory, 17-test suite, and Electron lifecycle cleanup.
+- Validation passed for the 17-test Node suite, Vite build, relative asset URLs, release-tag check, CJS syntax and diff checks; the local Windows portable packaging reached Electron Builder's portable target but remained blocked in the environment's `signtool.exe` step without a project certificate.
+- Fixed shutdown cleanup by avoiding access to destroyed `webContents` in the window `closed` handler.
+
 ### Desktop packaging and releases
 
 - Replaced Electron Forge and Squirrel packaging with direct Electron Builder configuration.

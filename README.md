@@ -14,6 +14,7 @@ The app provides a simple React interface inspired by Apple Podcasts, with podca
 - Live activity log during downloads.
 - Download cancellation with partial-file cleanup.
 - Secure Electron IPC bridge with `contextIsolation` enabled and Node integration disabled.
+- Sandboxed renderer served through a restricted `app://bundle` protocol in packaged builds, with relative assets and a restrictive CSP.
 - Command-line compatible RSS downloader.
 
 ## Requirements
@@ -53,6 +54,8 @@ npm run dev
 ```
 
 The Electron window will load the local Vite application.
+
+Packaged builds serve the generated renderer from `dist/` through `app://bundle`; the renderer never receives direct Node.js or filesystem access. The main process owns the selected destination directory and the download request contains only the selected podcast ID.
 
 ## Production build
 
@@ -130,7 +133,7 @@ The podcast ID is currently defined in `rss-extract.js` as `1463322273`.
 
 ## Testing
 
-Run the automated tests with:
+Run the 17 automated Node.js tests with:
 
 ```bash
 npm test
@@ -140,12 +143,21 @@ npm test
 
 ```text
 electron/
-  main.cjs       Electron main process and IPC handlers
+  main.cjs       Electron bootstrap and lifecycle
+  window.cjs     Secure BrowserWindow creation
   preload.cjs    Secure renderer bridge
+  app-protocol.cjs Secure app://bundle renderer protocol
+  ipc/           IPC channels, sender validation, and handlers
+  services/      Search and download lifecycle managers
 src/
-  App.jsx        Main React interface
+  App.jsx        Main page composition
+  components/    Download, search, artwork, and activity-log components
+  hooks/         Search and download state hooks
+  services/      Renderer desktop API adapter
+  utils/         Renderer formatting helpers
   main.jsx       React entry point
   styles.css     Application styling
+core/            Shared HTTP, Apple search, and download modules
 podcast-search.js Apple Podcasts catalog search logic
 rss-extract.js   RSS lookup and episode download logic
 test/

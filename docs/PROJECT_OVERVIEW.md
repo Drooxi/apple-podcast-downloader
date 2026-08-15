@@ -30,7 +30,7 @@ The user can:
 6. Watch RSS lookup, episode, and file download messages in the activity log.
 7. Cancel an active download with **Annuler**.
 
-The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow.
+The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection.
 
 The interface labels are currently in French, while the public README is in English.
 
@@ -57,14 +57,14 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 
 - Electron window creation.
 - React/Vite renderer.
-- Secure preload bridge.
+- Secure preload bridge with sandboxed renderer and sender validation.
 - Native destination folder selection.
 - Apple Podcasts search and result selection.
 - RSS lookup and XML parsing.
 - Sequential MP3 downloads.
 - Progress logs and status updates.
 - Cancellation through `AbortController`.
-- Basic Node.js unit tests.
+- Basic Node.js unit tests for the domain, IPC boundaries, preload contract and secure application protocol.
 
 ## Desktop distribution
 
@@ -87,10 +87,10 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 
 ## Current validation baseline
 
-- `npm test` contains nine tests for search URL construction, result normalization, filename sanitization, ID validation, cancellation, and release tag validation.
+- `npm test` contains 17 Node.js tests covering search, downloads, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
-- `npm start` loads the built renderer from `dist/`.
+- `npm start` loads the built renderer from `dist/` through the secured `app://bundle` protocol.
 - `npm run make` clears `out/make/` and generates local platform distributables through Electron Builder.
 - `npm run check:release-version v1.0.0` validates a release tag against `package.json`.
 - Renovate checks npm dependencies weekly and opens grouped pull requests for non-major updates.
