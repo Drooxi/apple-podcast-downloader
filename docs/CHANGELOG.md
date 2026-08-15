@@ -16,6 +16,8 @@
 - Finalized the documentation baseline for the secured `app://bundle` renderer, main-owned destination directory, 17-test suite, and Electron lifecycle cleanup.
 - Validation passed for the 17-test Node suite, Vite build, relative asset URLs, release-tag check, CJS syntax and diff checks; the local Windows portable packaging reached Electron Builder's portable target but remained blocked in the environment's `signtool.exe` step without a project certificate.
 - Fixed shutdown cleanup by avoiding access to destroyed `webContents` in the window `closed` handler.
+- Corrected generated native icons with valid PNG checksums and multi-resolution Windows ICO entries so packaged executables can display their application icon.
+- Changed icon generation to read `assets/icons/icon.svg` as the single artwork source for the Windows ICO and macOS ICNS outputs.
 
 ### Desktop packaging and releases
 

@@ -90,7 +90,7 @@ The packaging configuration is defined in `electron-builder.config.cjs`. `npm ru
 | `assets/entitlements.mac.plist` | Hardened runtime entitlements for the macOS application and child processes. |
 | `assets/entitlements.mac.inherit.plist` | Inherited hardened runtime entitlements for Electron child processes. |
 | `scripts/clean-artifacts.cjs` | Removes the generated `out/make/` directory before a local package build. |
-| `scripts/generate-icons.cjs` | Generates the versioned Windows ICO, macOS ICNS, and SVG source icon. |
+| `scripts/generate-icons.cjs` | Reads `assets/icons/icon.svg` and generates valid multi-resolution Windows ICO and macOS ICNS icons. |
 | `scripts/check-release-version.cjs` | Ensures a release tag matches the npm package version and exports the validation for tests. |
 | `.github/workflows/release.yml` | Builds Windows/macOS artifacts and publishes GitHub releases for `v*` tags. |
 | `renovate.json` | Configures scheduled npm dependency updates, grouping, limits, and review labels. |
