@@ -43,15 +43,15 @@ The initial directory is the project-level `episodes/` folder. The user can repl
 - Any non-zero failed episode count is reported as a failed overall status.
 - Cancellation is represented separately from failure.
 
-## Electron Forge distribution
+## Electron Builder distribution
 
-Electron Forge is used for platform packaging. The Squirrel maker creates a Windows x64 `.exe` installer, while the DMG and ZIP makers create macOS x64/arm64 distributables. Builds run on native GitHub-hosted runners because DMG generation requires macOS.
+Electron Builder is used directly for platform packaging. The Windows target is a portable x64 `.exe`, while macOS produces x64/arm64 DMG and ZIP distributables. Builds run on native GitHub-hosted runners because DMG generation requires macOS.
 
-The npm package metadata includes a non-empty author and description because Squirrel requires both fields when creating the Windows installer.
+The Builder configuration uses the explicit application ID `com.drooxi.apple-podcast-downloader`, a shared `out/make` output directory, ASAR packaging, and stable platform/architecture artifact names. The local `make` task clears that generated directory before packaging and excludes it from the application file set, preventing previous builds from being recursively packaged or uploaded.
 
 Releases are triggered by `v*` tags, and `scripts/check-release-version.cjs` requires the tag to match the `package.json` version. A single Ubuntu publication job creates the GitHub release and uploads artifacts collected from the platform jobs.
 
-Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing and macOS signing/notarization are activated by `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. The Windows certificate is decoded only into the temporary runner directory; the preparation step safely does nothing when the optional secret is absent. Auto-update support remains out of scope.
+Signing is conditional: unsigned artifacts are valid for the initial workflow, while Windows signing uses `WINDOWS_CERTIFICATE_BASE64` and `WINDOWS_CERTIFICATE_PASSWORD`, and macOS signing/notarization additionally uses `MAC_CERTIFICATE_BASE64`, `MAC_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. Certificates are decoded only into temporary runner directories. Auto-update support remains out of scope.
 
 ## Renovate dependency updates
 
@@ -65,7 +65,7 @@ mise is used as the project tool-version manager. `mise.toml` pins Node.js to `2
 
 Node.js 24.19.0 LTS is the supported runtime baseline. Direct dependencies are refreshed to current stable releases, including Vite 8, `@vitejs/plugin-react` 6, Electron 43.4, Renovate 44, and their compatible transitive lockfile dependencies. The `engines` field rejects runtimes older than Node 24.19/npm 11.17.
 
-Electron 43.4.0 exposes its runtime download as the `install-electron` binary rather than a package lifecycle script in the installed package metadata. The project therefore runs it from `postinstall` so `npm ci` consistently prepares the runtime needed by Electron Forge and local startup.
+Electron 43.4.0 exposes its runtime download as the `install-electron` binary rather than a package lifecycle script in the installed package metadata. The project therefore runs it from `postinstall` so `npm ci` consistently prepares the runtime needed by Electron Builder and local startup.
 
 ## Current limitations to revisit
 

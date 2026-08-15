@@ -4,13 +4,18 @@
 
 ### Desktop packaging and releases
 
-- Added Electron Forge packaging for Windows x64 `.exe` and macOS x64/arm64 `.dmg`/`.zip` artifacts.
+- Replaced Electron Forge and Squirrel packaging with direct Electron Builder configuration.
+- Added a Windows x64 portable `.exe` target and preserved macOS x64/arm64 DMG and ZIP targets under `out/make`.
+- Added conditional Windows/macOS certificate handling, macOS hardened runtime entitlements, and optional notarization secrets.
+- Passed the optional macOS Developer ID identity to Electron Builder only when a signing certificate is configured.
+- Updated the release workflow and documentation to use Electron Builder commands and artifact names.
+- Added the desktop packaging pipeline for Windows x64 `.exe` and macOS x64/arm64 `.dmg`/`.zip` artifacts.
 - Added generated native application icons and a release-tag/version consistency check.
 - Added a GitHub Actions workflow triggered by `v*` tags, with one final job publishing generated release notes and all platform artifacts.
 - Prepared conditional Windows signing and macOS signing/notarization without requiring secrets for initial unsigned builds.
-- Added the author and description metadata required by the Windows Squirrel maker.
+- Added the author and description metadata required by the Windows package metadata.
 - Added release-version unit coverage and made GitHub artifact collection robust to nested artifact paths.
-- Ignored local Electron Forge output under `out/`.
+- Ignored local desktop packaging output under `out/`.
 - Corrected the README project tree and documented all optional signing secrets.
 - Updated the Windows workflow to decode the certificate from a base64 secret on the temporary runner.
 - Added Renovate configuration for scheduled, grouped npm dependency updates without auto-merge.
@@ -18,10 +23,11 @@
 - Migrated the project runtime from Node.js 22.12.0 to Node.js 24.19.0 LTS and npm 11.17.0.
 - Updated Vite to 8.2.1, `@vitejs/plugin-react` to 6.0.5, Electron to 43.4.0, Renovate to 44.30.3, and refreshed the npm lockfile.
 - Classified Renovate as development tooling so its native `re2` dependency is excluded from packaged application dependencies.
-- Confirmed the local Electron smoke test starts successfully and the Windows x64 Forge packaging completes after excluding Renovate's native tooling from production dependencies; the generated installer is `ApplePodcastDownloaderSetup.exe`.
+- Confirmed the local Electron smoke test starts successfully and the previous Windows x64 packaging completed after excluding Renovate's native tooling from production dependencies.
 - Validated `npm ci`, nine passing Node.js tests, the Vite build, release-tag matching, Renovate configuration, and an empty `npm outdated` report.
 - Recorded the remaining npm audit report from the refreshed tree: 29 vulnerabilities (3 low, 25 high, 1 critical) require separate dependency/security review.
 - Added an explicit Electron runtime postinstall step so clean npm installations are ready to start and package the desktop application.
+- Added a clean packaging step and excluded `out/` from the packaged file set after detecting recursive inclusion of previous local artifacts.
 
 ### Podcast search and selection
 
@@ -72,4 +78,4 @@
 - React/Vite renders the single-page downloader interface.
 - The preload bridge exposes directory selection, start/cancel actions, logs, and status events.
 - `rss-extract.js` supports both module use and direct CLI execution.
-- Electron Forge packages Windows and macOS artifacts, and GitHub Actions publishes tagged releases.
+- Electron Builder packages Windows and macOS artifacts, and GitHub Actions publishes tagged releases.

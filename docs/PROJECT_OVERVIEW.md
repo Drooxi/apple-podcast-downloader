@@ -68,11 +68,11 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 
 ## Desktop distribution
 
-Electron Forge packages the application into a Windows x64 `.exe` installer and macOS x64/arm64 `.dmg` and `.zip` artifacts. GitHub Actions runs these builds on Windows and macOS runners when a `vX.Y.Z` tag is pushed. The tag must match the version in `package.json`; a final Ubuntu job creates the GitHub release with generated notes and uploads all artifacts.
+Electron Builder packages the application into a Windows x64 portable `.exe` and macOS x64/arm64 `.dmg` and `.zip` artifacts. GitHub Actions runs these builds on Windows and macOS runners when a `vX.Y.Z` tag is pushed. The tag must match the version in `package.json`; a final Ubuntu job creates the GitHub release with generated notes and uploads all artifacts.
 
 The initial workflow produces unsigned artifacts. Windows signing and macOS signing/notarization activate only when the documented GitHub secrets are provided.
 
-The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. The Windows certificate is decoded into the temporary GitHub runner directory during the workflow.
+The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFICATE_PASSWORD`, `MAC_CERTIFICATE_BASE64`, `MAC_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID`, and `APPLE_DEVELOPER_IDENTITY`. Certificates are decoded into temporary GitHub runner directories during the workflow.
 
 ## Scope currently excluded
 
@@ -91,7 +91,7 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/`.
-- `npm run make` generates local platform distributables through Electron Forge.
+- `npm run make` clears `out/make/` and generates local platform distributables through Electron Builder.
 - `npm run check:release-version v1.0.0` validates a release tag against `package.json`.
 - Renovate checks npm dependencies weekly and opens grouped pull requests for non-major updates.
 - `mise.toml` pins Node.js to `24.19.0` and exposes `dev`, `test`, `build`, and `make` tasks through mise.

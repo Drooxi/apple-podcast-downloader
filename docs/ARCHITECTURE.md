@@ -46,7 +46,7 @@ The renderer does not receive Node.js APIs directly. `contextIsolation` is enabl
 
 `npm run build` writes the renderer to `dist/` using Vite 8 and `@vitejs/plugin-react` 6. When `VITE_DEV_SERVER_URL` is absent, Electron loads `dist/index.html` from disk.
 
-The packaging configuration is defined in `forge.config.cjs`. Electron Forge builds a Windows x64 Squirrel installer and macOS DMG/ZIP distributables. The GitHub Actions release workflow builds each platform on its native runner and publishes the collected artifacts in one release job.
+The packaging configuration is defined in `electron-builder.config.cjs`. `npm run make` first clears the generated `out/make/` directory, then builds with Electron Builder. Electron Builder creates a Windows x64 portable `.exe` and macOS DMG/ZIP distributables. The GitHub Actions release workflow builds each platform on its native runner and publishes the collected artifacts in one release job.
 
 ## File responsibilities
 
@@ -65,7 +65,10 @@ The packaging configuration is defined in `forge.config.cjs`. Electron Forge bui
 | `test/podcast-search.test.cjs` | Node.js tests for search parameters, normalization, and search cancellation. |
 | `test/rss-extract.test.cjs` | Node.js tests for filename behavior, download cancellation, and podcast ID validation. |
 | `README.md` | Public English setup and usage documentation. |
-| `forge.config.cjs` | Electron Forge makers, application identity, icons, and conditional signing/notarization configuration. |
+| `electron-builder.config.cjs` | Electron Builder targets, application identity, icons, artifact names, entitlements, and conditional notarization configuration. |
+| `assets/entitlements.mac.plist` | Hardened runtime entitlements for the macOS application and child processes. |
+| `assets/entitlements.mac.inherit.plist` | Inherited hardened runtime entitlements for Electron child processes. |
+| `scripts/clean-artifacts.cjs` | Removes the generated `out/make/` directory before a local package build. |
 | `scripts/generate-icons.cjs` | Generates the versioned Windows ICO, macOS ICNS, and SVG source icon. |
 | `scripts/check-release-version.cjs` | Ensures a release tag matches the npm package version and exports the validation for tests. |
 | `.github/workflows/release.yml` | Builds Windows/macOS artifacts and publishes GitHub releases for `v*` tags. |

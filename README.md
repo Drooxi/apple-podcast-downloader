@@ -68,13 +68,13 @@ Then launch Electron with the generated build:
 npm start
 ```
 
-To create a platform installer locally, use Electron Forge on the current operating system:
+To create the desktop distributables locally, use Electron Builder on the current operating system. The command clears the generated `out/make/` directory first:
 
 ```bash
 npm run make
 ```
 
-Windows produces an x64 `.exe` installer. macOS produces `.dmg` and `.zip` files for the selected architecture. DMG builds must run on macOS.
+Windows produces `out/make/ApplePodcastDownloader-<version>-win-x64.exe` as an x64 portable application. macOS produces `out/make/ApplePodcastDownloader-<version>-mac-<arch>.dmg` and `.zip` files for x64 and arm64. macOS builds must run on macOS.
 
 ## GitHub releases
 
@@ -91,12 +91,14 @@ Optional repository secrets for signing are:
 
 - `WINDOWS_CERTIFICATE_BASE64`: base64-encoded Windows `.p12`/`.pfx` certificate.
 - `WINDOWS_CERTIFICATE_PASSWORD`: certificate password.
+- `MAC_CERTIFICATE_BASE64`: base64-encoded macOS Developer ID `.p12` certificate.
+- `MAC_CERTIFICATE_PASSWORD`: macOS certificate password.
 - `APPLE_ID`: Apple Developer account email.
 - `APPLE_APP_SPECIFIC_PASSWORD`: app-specific password for notarization.
 - `APPLE_TEAM_ID`: Apple Developer team ID.
 - `APPLE_DEVELOPER_IDENTITY`: Developer ID Application certificate identity.
 
-The Windows certificate is decoded only on the GitHub runner and is never committed to the repository. Without these secrets, the workflow creates unsigned artifacts.
+Certificates are decoded only on the GitHub runner and are never committed to the repository. Without the certificate and notarization secrets, the workflow creates unsigned artifacts.
 
 ## Usage
 
@@ -149,8 +151,9 @@ rss-extract.js   RSS lookup and episode download logic
 test/
   *.test.cjs     Node.js tests
 assets/icons/    Windows, macOS, and source application icons
-forge.config.cjs Electron Forge packaging configuration
-scripts/         Release validation and icon generation scripts
+electron-builder.config.cjs Electron Builder packaging configuration
+assets/entitlements*.plist macOS hardened runtime entitlements
+scripts/         Release validation, icon generation, and packaging cleanup scripts
 .github/workflows/release.yml GitHub release workflow
 ```
 

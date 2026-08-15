@@ -31,5 +31,6 @@ After every code change:
 - The application is a local Electron desktop application with a React/Vite renderer.
 - The project has one hard-coded podcast identifier and one download workflow.
 - The renderer communicates with Node/Electron only through the preload bridge.
-- Electron Forge packaging and GitHub release automation are implemented for Windows and macOS.
+- Electron Builder packaging and GitHub release automation are implemented for Windows and macOS.
+- Local packaging starts from a clean generated `out/make/` directory.
 - Documentation must remain aligned with the code, even when a change is small.
