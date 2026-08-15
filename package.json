@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Unlicense",
   "description": "",
   "dependencies": {
     "fast-xml-parser": "^5.10.1",
