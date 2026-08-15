@@ -1,5 +1,10 @@
 # Documentation and Implementation Changelog
 
+## 1.1.0 - 2026-08-15
+
+- Published the reorganized and hardened Electron application with Apple Podcasts search, main-owned download destinations, secure `app://bundle` loading, and Electron Builder release targets.
+- Corrected native icon generation to derive Windows and macOS icons from `assets/icons/icon.svg`.
+
 ## 2026-08-15
 
 ### Architecture and security refactor
