@@ -100,7 +100,7 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/` through the secured `app://bundle` protocol.
 - `npm run make` clears `out/make/` and generates local platform distributables through Electron Builder.
-- `npm run check:release-version v1.0.0` validates a release tag against `package.json`.
+- `npm run check:release-version v1.2.0` validates the current release tag against `package.json`.
 - Renovate checks npm dependencies weekly and opens grouped pull requests for non-major updates.
 - `mise.toml` pins Node.js to `24.19.0` and exposes `dev`, `test`, `build`, and `make` tasks through mise.
 - The current toolchain uses npm `11.17.0`, Vite `8.2.1`, and `@vitejs/plugin-react` `6.0.5`.

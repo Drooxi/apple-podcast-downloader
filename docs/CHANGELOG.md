@@ -1,5 +1,9 @@
 # Documentation and Implementation Changelog
 
+## 1.2.0 - 2026-08-17
+
+- Bumped the application version and release tag target to `v1.2.0`.
+
 ## 2026-08-16
 
 ### Collapsible activity log
