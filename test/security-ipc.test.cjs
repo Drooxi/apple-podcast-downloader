@@ -75,3 +75,72 @@ test("registerIpcHandlers valide l’expéditeur et supprime ses handlers", asyn
   cleanup();
   assert.equal(handlers.size, 0);
 });
+
+test("download:select-directory persiste avant de changer le dossier actif", async () => {
+  const handlers = new Map();
+  const ipcMain = {
+    handle: (channel, handler) => handlers.set(channel, handler),
+    removeHandler: () => {},
+  };
+  const selectedDirectory = path.resolve("selected-episodes");
+  let activeDirectory = path.resolve("episodes");
+  const saved = [];
+  const downloadManager = {
+    getOutputDirectory: () => activeDirectory,
+    setOutputDirectory: (value) => { activeDirectory = value; return value; },
+    start: async () => ({ status: "completed" }),
+    cancel: () => false,
+    dispose: () => {},
+  };
+  const cleanup = registerIpcHandlers({
+    dialog: { showOpenDialog: async () => ({ canceled: false, filePaths: [selectedDirectory] }) },
+    downloadManager,
+    getMainWindow: () => null,
+    ipcMain,
+    outputDirectoryStore: { save: (value) => saved.push(value) },
+    searchManager: { searchPodcasts: async () => [], cancel: () => true, dispose: () => {} },
+  });
+  const event = {
+    sender: { id: 8, isDestroyed: () => false, send: () => {} },
+    senderFrame: { url: "app://bundle/index.html" },
+  };
+
+  assert.equal(await handlers.get("download:select-directory")(event), selectedDirectory);
+  assert.deepEqual(saved, [selectedDirectory]);
+  assert.equal(activeDirectory, selectedDirectory);
+  cleanup();
+});
+
+test("download:select-directory conserve le dossier actif si la persistance échoue", async () => {
+  const handlers = new Map();
+  const ipcMain = {
+    handle: (channel, handler) => handlers.set(channel, handler),
+    removeHandler: () => {},
+  };
+  const initialDirectory = path.resolve("episodes");
+  const selectedDirectory = path.resolve("selected-episodes");
+  let activeDirectory = initialDirectory;
+  const downloadManager = {
+    getOutputDirectory: () => activeDirectory,
+    setOutputDirectory: (value) => { activeDirectory = value; return value; },
+    start: async () => ({ status: "completed" }),
+    cancel: () => false,
+    dispose: () => {},
+  };
+  const cleanup = registerIpcHandlers({
+    dialog: { showOpenDialog: async () => ({ canceled: false, filePaths: [selectedDirectory] }) },
+    downloadManager,
+    getMainWindow: () => null,
+    ipcMain,
+    outputDirectoryStore: { save: () => { throw new Error("écriture impossible"); } },
+    searchManager: { searchPodcasts: async () => [], cancel: () => true, dispose: () => {} },
+  });
+  const event = {
+    sender: { id: 9, isDestroyed: () => false, send: () => {} },
+    senderFrame: { url: "app://bundle/index.html" },
+  };
+
+  await assert.rejects(handlers.get("download:select-directory")(event), /écriture impossible/);
+  assert.equal(activeDirectory, initialDirectory);
+  cleanup();
+});

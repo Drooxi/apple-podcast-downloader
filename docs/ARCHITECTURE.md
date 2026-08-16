@@ -65,6 +65,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `electron/ipc/register-handlers.cjs` | Validated IPC handlers and cleanup registration. |
 | `electron/services/search-manager.cjs` | Search cancellation and active-search state. |
 | `electron/services/download-manager.cjs` | Download lifecycle, destination ownership and status/log events. |
+| `electron/services/output-directory-store.cjs` | Validated persistence of the selected output directory in Electron `userData`. |
 | `electron/app-protocol.cjs` | Secure `app://bundle` serving of built renderer files. |
 | `src/main.jsx` | React root mounting and global stylesheet import. |
 | `src/App.jsx` | Page composition and hero layout. |
@@ -87,6 +88,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `test/http-client.test.cjs` | Tests for bounded redirects and pre-aborted shared HTTP requests. |
 | `test/security-ipc.test.cjs` | Tests for application protocol path safety, sender origins, payloads and handler cleanup. |
 | `test/managers.test.cjs` | Tests for search cancellation and single-download lifecycle ownership. |
+| `test/output-directory-store.test.cjs` | Tests for destination persistence, fallback and write failures. |
 | `test/preload.test.cjs` | VM-based tests for the sandbox-compatible preload API and subscriptions. |
 | `README.md` | Public English setup and usage documentation. |
 | `electron-builder.config.cjs` | Electron Builder targets, application identity, icons, artifact names, entitlements, and conditional notarization configuration. |
@@ -125,6 +127,8 @@ The preload listener methods return idempotent cleanup functions so React can un
 Progress is based on successful episode downloads divided by the total RSS item count. Failed items update `failed` but do not increase `downloaded`, so a failed run can finish below 100%.
 
 The renderer keeps the progress panel visible after any attempted run, including lookup/RSS errors that occur before a total is known; that state is shown as 0% until a new run starts.
+
+The main process restores the output directory from `userData/output-directory.json`. Invalid, missing or deleted saved directories fall back to the project `episodes/` directory. The renderer never reads or writes this file directly.
 
 ## Download state flow
 

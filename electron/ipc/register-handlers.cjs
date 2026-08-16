@@ -18,7 +18,7 @@ function sendToSender(sender, channel, payload) {
   if (!sender.isDestroyed()) sender.send(channel, payload);
 }
 
-function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, searchManager, devServerUrl }) {
+function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, outputDirectoryStore, searchManager, devServerUrl }) {
   const handlers = [
     [CHANNELS.podcastSearch, async (event, payload = {}) => {
       assertTrustedSender(event, devServerUrl);
@@ -42,7 +42,9 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, 
         properties: ["openDirectory", "createDirectory"],
       });
       if (result.canceled) return null;
-      return downloadManager.setOutputDirectory(result.filePaths[0]);
+      const selectedDirectory = result.filePaths[0];
+      outputDirectoryStore?.save(selectedDirectory);
+      return downloadManager.setOutputDirectory(selectedDirectory);
     }],
     [CHANNELS.downloadStart, async (event, payload = {}) => {
       assertTrustedSender(event, devServerUrl);

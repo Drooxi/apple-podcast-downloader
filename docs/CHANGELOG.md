@@ -2,11 +2,17 @@
 
 ## 2026-08-16
 
+### Output directory persistence
+
+- Persisted the selected download directory in Electron `userData/output-directory.json`.
+- Added validation and fallback to `episodes/` for missing, malformed or inaccessible saved paths.
+- Kept persistence in the main process and covered save, reload, fallback and failure behavior with tests; the suite now contains 26 tests.
+
 ### Download progress
 
 - Added episode-count progress events from the RSS downloader through `download:progress`.
 - Added an accessible pink/violet loading bar with successful-download and failure counters to the Electron UI.
-- Added coverage for successful, failed, empty-feed and cancelled progress flows; the suite now contains 20 tests.
+- Added coverage for successful, failed, empty-feed and cancelled progress flows; the suite now contains 20 tests at that release milestone.
 
 ## 1.1.1 - 2026-08-16
 

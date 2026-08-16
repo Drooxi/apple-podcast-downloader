@@ -5,6 +5,7 @@ const { registerAppProtocol, registerAppScheme } = require("./app-protocol.cjs")
 const { registerIpcHandlers } = require("./ipc/register-handlers.cjs");
 const { createMainWindow } = require("./window.cjs");
 const { DownloadManager } = require("./services/download-manager.cjs");
+const { OutputDirectoryStore } = require("./services/output-directory-store.cjs");
 const { SearchManager } = require("./services/search-manager.cjs");
 
 const defaultOutputDirectory = path.resolve(__dirname, "..", "episodes");
@@ -34,12 +35,16 @@ function createApplicationWindow() {
 app.whenReady().then(() => {
   registerAppProtocol(protocol, net, rendererDirectory);
   searchManager = new SearchManager();
-  downloadManager = new DownloadManager({ outputDirectory: defaultOutputDirectory });
+  const outputDirectoryStore = new OutputDirectoryStore({ userDataDirectory: app.getPath("userData") });
+  downloadManager = new DownloadManager({
+    outputDirectory: outputDirectoryStore.load(defaultOutputDirectory),
+  });
   cleanupIpc = registerIpcHandlers({
     dialog,
     downloadManager,
     getMainWindow: () => mainWindow,
     ipcMain,
+    outputDirectoryStore,
     searchManager,
     devServerUrl: process.env.VITE_DEV_SERVER_URL,
   });

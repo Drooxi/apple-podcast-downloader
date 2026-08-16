@@ -31,7 +31,7 @@ The user can:
 7. Follow an episode-count progress bar showing successful downloads out of the RSS total.
 8. Cancel an active download with **Annuler**.
 
-The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection.
+The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection and restored from the user-specific Electron `userData` directory on the next launch.
 
 The interface labels are currently in French, while the public README is in English.
 
@@ -61,6 +61,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 - React/Vite renderer.
 - Secure preload bridge with sandboxed renderer and sender validation.
 - Native destination folder selection.
+- Persistence of the last selected destination between launches.
 - Apple Podcasts search and result selection.
 - RSS lookup and XML parsing.
 - Sequential MP3 downloads.
@@ -86,11 +87,11 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - Episode search, filtering, or playback.
 - Byte-level download progress.
 - Automated UI/e2e tests.
-- Persistent application settings.
+- Persistence of podcast selection, logs and download progress.
 
 ## Current validation baseline
 
-- `npm test` contains 20 Node.js tests covering search, downloads, episode progress, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
+- `npm test` contains 26 Node.js tests covering search, downloads, episode progress, destination persistence, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/` through the secured `app://bundle` protocol.

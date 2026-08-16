@@ -116,7 +116,7 @@ Certificates are decoded only on the GitHub runner and are never committed to th
 6. Follow the live activity log and episode-count progress bar.
 7. Click **Annuler** if the download needs to be stopped.
 
-The default destination is the project’s `episodes/` directory. Downloaded MP3 files are ignored by Git.
+The default destination is the project’s `episodes/` directory. After choosing another folder, the application restores it automatically on the next launch. If the saved folder no longer exists, the application falls back to `episodes/`. Downloaded MP3 files are ignored by Git.
 
 ## Command-line downloader
 
@@ -136,7 +136,7 @@ The podcast ID is currently defined in `rss-extract.js` as `1463322273`.
 
 ## Testing
 
-Run the 20 automated Node.js tests with:
+Run the 26 automated Node.js tests with:
 
 ```bash
 npm test
@@ -151,7 +151,7 @@ electron/
   preload.cjs    Secure renderer bridge
   app-protocol.cjs Secure app://bundle renderer protocol
   ipc/           IPC channels, sender validation, and handlers
-  services/      Search and download lifecycle managers
+  services/      Search, download lifecycle, and output-directory persistence managers
 src/
   App.jsx        Main page composition
   components/    Download, search, artwork, and activity-log components

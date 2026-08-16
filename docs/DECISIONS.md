@@ -46,6 +46,8 @@ The initial directory is the project-level `episodes/` folder. The user can repl
 
 The selected directory is now owned by the main process. The renderer can request or change it through IPC but cannot supply an arbitrary output path to `download:start`.
 
+The last selected directory is persisted as a minimal JSON file under Electron’s `userData` directory. The main process validates the saved path on startup; missing, malformed, inaccessible or deleted paths fall back to the project `episodes/` directory. The CLI does not read or write this setting.
+
 Window cleanup captures the sender identifier before destruction and cancels operations without reading `webContents` from the `closed` event.
 
 ## Electron application protocol
