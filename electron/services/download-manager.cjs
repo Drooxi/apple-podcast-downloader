@@ -29,7 +29,7 @@ class DownloadManager {
     return this.outputDirectory;
   }
 
-  async start({ podcastId, senderId, emitLog, emitStatus }) {
+  async start({ podcastId, senderId, emitLog, emitProgress = () => {}, emitStatus }) {
     if (this.active) throw new Error("Un téléchargement est déjà en cours.");
 
     const normalizedPodcastId = validatePodcastId(podcastId);
@@ -43,6 +43,7 @@ class DownloadManager {
         podcastId: normalizedPodcastId,
         signal: controller.signal,
         onLog: emitLog,
+        onProgress: emitProgress,
       });
       const outcome = result.failed > 0
         ? { status: "failed", message: `${result.failed} épisode(s) n’ont pas pu être téléchargés.`, result }

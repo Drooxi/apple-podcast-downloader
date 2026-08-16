@@ -31,9 +31,18 @@ async function runDownload({
   podcastId = DEFAULT_PODCAST_ID,
   onLog = (message, level = "info") =>
     console[level === "error" ? "error" : "log"](message),
+  onProgress = () => {},
+  requestTextImpl = requestText,
+  downloadFileImpl = downloadFile,
   signal,
 } = {}) {
   const log = (message, level = "info") => onLog(message, level);
+  const reportProgress = (total, downloaded, failed) => onProgress({
+    total,
+    downloaded,
+    failed,
+    percent: total > 0 ? Math.round((downloaded / total) * 100) : 0,
+  });
   throwIfAborted(signal, DownloadCancelledError);
   const normalizedPodcastId = validatePodcastId(podcastId);
 
@@ -43,7 +52,7 @@ async function runDownload({
   let lookup;
   try {
     lookup = JSON.parse(
-      await requestText(
+      await requestTextImpl(
         `https://itunes.apple.com/lookup?id=${encodeURIComponent(normalizedPodcastId)}`,
         {
           signal,
@@ -70,7 +79,7 @@ async function runDownload({
 
   let xml;
   try {
-    xml = await requestText(feedUrl, {
+    xml = await requestTextImpl(feedUrl, {
       signal,
       createAbortError: () => new DownloadCancelledError(),
     });
@@ -93,6 +102,7 @@ async function runDownload({
 
   let downloaded = 0;
   let failed = 0;
+  reportProgress(items.length, downloaded, failed);
 
   for (const episode of items) {
     throwIfAborted(signal, DownloadCancelledError);
@@ -105,6 +115,7 @@ async function runDownload({
     if (!episode.enclosure?.url) {
       log("Aucun fichier audio trouvé pour cet épisode.", "error");
       failed += 1;
+      reportProgress(items.length, downloaded, failed);
       continue;
     }
 
@@ -113,18 +124,20 @@ async function runDownload({
     log(`Téléchargement : ${filename}`);
 
     try {
-      await downloadFile(episode.enclosure.url, filepath, {
+      await downloadFileImpl(episode.enclosure.url, filepath, {
         signal,
         createAbortError: () => new DownloadCancelledError(),
       });
       downloaded += 1;
       log("Téléchargement terminé.");
+      reportProgress(items.length, downloaded, failed);
     } catch (error) {
       if (isCancellationError(error, signal)) {
         throw new DownloadCancelledError();
       }
       failed += 1;
       log(`Erreur : ${error.message}`, "error");
+      reportProgress(items.length, downloaded, failed);
     }
   }
 

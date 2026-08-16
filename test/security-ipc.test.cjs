@@ -47,7 +47,8 @@ test("registerIpcHandlers valide l’expéditeur et supprime ses handlers", asyn
     cancel: () => true,
     dispose: () => {},
   };
-  const sender = { id: 7, isDestroyed: () => false, send: () => {} };
+  const messages = [];
+  const sender = { id: 7, isDestroyed: () => false, send: (channel, payload) => messages.push({ channel, payload }) };
   const event = { sender, senderFrame: { url: "app://bundle/index.html" } };
   const cleanup = registerIpcHandlers({
     dialog: { showOpenDialog: async () => ({ canceled: true, filePaths: [] }) },
@@ -60,6 +61,17 @@ test("registerIpcHandlers valide l’expéditeur et supprime ses handlers", asyn
   assert.equal(handlers.get("download:get-directory")(event), path.resolve("episodes"));
   await assert.rejects(Promise.resolve().then(() => handlers.get("download:get-directory")({ senderFrame: { url: "https://example.com" } })), /Origine IPC/);
   await assert.rejects(Promise.resolve().then(() => handlers.get("download:start")(event, {})), /podcast doit être sélectionné/);
+  await handlers.get("download:start")(event, { podcastId: "123" });
+  assert.equal(messages.some(({ channel }) => channel === "download:progress"), false);
+  downloadManager.start = async (options) => {
+    options.emitProgress({ total: 2, downloaded: 1, failed: 0, percent: 50 });
+    return { status: "completed" };
+  };
+  await handlers.get("download:start")(event, { podcastId: "123" });
+  assert.deepEqual(messages.find(({ channel }) => channel === "download:progress"), {
+    channel: "download:progress",
+    payload: { total: 2, downloaded: 1, failed: 0, percent: 50 },
+  });
   cleanup();
   assert.equal(handlers.size, 0);
 });

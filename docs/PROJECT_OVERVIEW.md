@@ -28,7 +28,8 @@ The user can:
 4. Review the default `episodes/` output directory or select another directory through the native Electron folder picker.
 5. Start the download with **Lancer le téléchargement**.
 6. Watch RSS lookup, episode, and file download messages in the activity log.
-7. Cancel an active download with **Annuler**.
+7. Follow an episode-count progress bar showing successful downloads out of the RSS total.
+8. Cancel an active download with **Annuler**.
 
 The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection.
 
@@ -50,6 +51,7 @@ The downloader:
 8. Downloads each enclosure URL into the selected directory.
 9. Removes a partial file when a download fails or is cancelled.
 10. Reports totals as `{ total, downloaded, failed }`.
+11. Emits progress as `{ total, downloaded, failed, percent }` after RSS parsing and after each episode.
 
 Episode-level errors are logged and the remaining episodes continue. A run with one or more episode errors ends with a failed UI status. A lookup, RSS, or cancellation error stops the run immediately.
 
@@ -63,6 +65,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 - RSS lookup and XML parsing.
 - Sequential MP3 downloads.
 - Progress logs and status updates.
+- Episode-count loading bar based on successful downloads.
 - Cancellation through `AbortController`.
 - Basic Node.js unit tests for the domain, IPC boundaries, preload contract and secure application protocol.
 
@@ -81,13 +84,13 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 - Download queue management.
 - Pause/resume support.
 - Episode search, filtering, or playback.
-- Download progress percentages or byte-level progress.
+- Byte-level download progress.
 - Automated UI/e2e tests.
 - Persistent application settings.
 
 ## Current validation baseline
 
-- `npm test` contains 17 Node.js tests covering search, downloads, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
+- `npm test` contains 20 Node.js tests covering search, downloads, episode progress, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/` through the secured `app://bundle` protocol.

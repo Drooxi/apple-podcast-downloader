@@ -30,6 +30,12 @@ Search suggestions are positioned as an overlay inside the download panel rather
 
 Episodes are downloaded one at a time. This reduces simultaneous network and filesystem pressure and keeps the activity log ordered. Parallel downloads can be considered only after defining concurrency limits, retry behavior, and cancellation semantics.
 
+## Episode-count progress
+
+The download bar reports successful episodes divided by the total number of RSS items. Progress is emitted after RSS parsing and after every episode attempt through `download:progress` with `{ total, downloaded, failed, percent }`. Failed episodes increase `failed` but do not count toward the percentage, so the final value can remain below 100% when the run has errors. Byte-level progress is intentionally out of scope.
+
+After any attempted run, the renderer retains the progress panel, including a 0% state when lookup or RSS loading fails before the episode total is available.
+
 ## AbortController cancellation
 
 The main process creates one `AbortController` per run. Network requests receive its signal, the current stream is destroyed when cancellation occurs, and the partial destination file is removed.

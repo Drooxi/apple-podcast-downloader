@@ -1,4 +1,5 @@
 import { ActivityLog } from "./ActivityLog.jsx";
+import { DownloadProgress } from "./DownloadProgress.jsx";
 import { PodcastSearch } from "./PodcastSearch.jsx";
 import { formatPath } from "../utils/format-path.js";
 
@@ -45,6 +46,7 @@ export function DownloadPanel({ download, search }) {
         {download.isRunning && <button className="cancel-button" type="button" onClick={download.cancelDownload}>Annuler</button>}
       </div>
 
+      <DownloadProgress progress={download.progress} isRunning={download.isRunning} hasStarted={download.hasStarted} />
       {download.statusMessage && <p className="status-message">{download.statusMessage}</p>}
       <ActivityLog logs={download.logs} />
     </div>

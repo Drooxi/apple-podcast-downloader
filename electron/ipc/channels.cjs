@@ -6,5 +6,6 @@ module.exports = Object.freeze({
   downloadStart: "download:start",
   downloadCancel: "download:cancel",
   downloadLog: "download:log",
+  downloadProgress: "download:progress",
   downloadStatus: "download:status",
 });

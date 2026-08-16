@@ -1,5 +1,13 @@
 # Documentation and Implementation Changelog
 
+## 2026-08-16
+
+### Download progress
+
+- Added episode-count progress events from the RSS downloader through `download:progress`.
+- Added an accessible pink/violet loading bar with successful-download and failure counters to the Electron UI.
+- Added coverage for successful, failed, empty-feed and cancelled progress flows; the suite now contains 20 tests.
+
 ## 1.1.1 - 2026-08-16
 
 - Prepared the patch release with the corrected Electron Builder workflow that disables implicit publishing in platform jobs.

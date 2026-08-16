@@ -51,3 +51,30 @@ test("DownloadManager conserve le dossier et publie l’annulation", async () =>
   assert.equal("outputDirectory" in optionsSeen, false);
   assert.deepEqual(statuses.map((status) => status.status), ["running", "cancelled"]);
 });
+
+test("DownloadManager relaie la progression et conserve le dernier état à l’annulation", async () => {
+  let release;
+  const progress = [];
+  const manager = new DownloadManager({
+    outputDirectory: path.resolve("episodes"),
+    downloader: async ({ onProgress, signal }) => {
+      onProgress({ total: 2, downloaded: 1, failed: 0, percent: 50 });
+      await new Promise((resolve) => { release = resolve; });
+      if (signal.aborted) throw new DownloadCancelledError();
+      return { total: 2, downloaded: 2, failed: 0 };
+    },
+  });
+
+  const operation = manager.start({
+    podcastId: "123",
+    senderId: 9,
+    emitLog: () => {},
+    emitProgress: (value) => progress.push(value),
+    emitStatus: () => {},
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(manager.cancel(9), true);
+  release();
+  assert.deepEqual(await operation, { status: "cancelled", message: "Le téléchargement a été annulé." });
+  assert.deepEqual(progress, [{ total: 2, downloaded: 1, failed: 0, percent: 50 }]);
+});

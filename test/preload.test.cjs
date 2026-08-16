@@ -35,5 +35,10 @@ test("le preload n’expose que des wrappers IPC filtrés", async () => {
   dispose();
   dispose();
   assert.equal(listeners.has("download:status"), false);
+  const disposeProgress = exposed.onDownloadProgress(callback);
+  assert.equal(listeners.has("download:progress"), true);
+  disposeProgress();
+  disposeProgress();
+  assert.equal(listeners.has("download:progress"), false);
   assert.throws(() => exposed.onDownloadLog(null), /callback/);
 });

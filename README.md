@@ -12,6 +12,7 @@ The app provides a simple React interface inspired by Apple Podcasts, with podca
 - Apple Podcasts RSS feed lookup.
 - MP3 episode downloads to a folder of your choice.
 - Live activity log during downloads.
+- Episode-count loading bar with download percentage.
 - Download cancellation with partial-file cleanup.
 - Secure Electron IPC bridge with `contextIsolation` enabled and Node integration disabled.
 - Sandboxed renderer served through a restricted `app://bundle` protocol in packaged builds, with relative assets and a restrictive CSP.
@@ -112,7 +113,7 @@ Certificates are decoded only on the GitHub runner and are never committed to th
 3. Select a podcast suggestion to confirm its Apple ID.
 4. Review or change the destination folder.
 5. Click **Lancer le téléchargement**.
-6. Follow the live activity log.
+6. Follow the live activity log and episode-count progress bar.
 7. Click **Annuler** if the download needs to be stopped.
 
 The default destination is the project’s `episodes/` directory. Downloaded MP3 files are ignored by Git.
@@ -135,7 +136,7 @@ The podcast ID is currently defined in `rss-extract.js` as `1463322273`.
 
 ## Testing
 
-Run the 17 automated Node.js tests with:
+Run the 20 automated Node.js tests with:
 
 ```bash
 npm test

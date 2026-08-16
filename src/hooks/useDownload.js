@@ -6,6 +6,8 @@ export function useDownload({ api = getDesktopApi() } = {}) {
   const [status, setStatus] = useState("idle");
   const [statusMessage, setStatusMessage] = useState("");
   const [logs, setLogs] = useState([]);
+  const [progress, setProgress] = useState({ total: 0, downloaded: 0, failed: 0, percent: 0 });
+  const [hasStarted, setHasStarted] = useState(false);
   const logId = useRef(0);
 
   useEffect(() => {
@@ -18,6 +20,15 @@ export function useDownload({ api = getDesktopApi() } = {}) {
       if (!mounted) return;
       setStatus(payload.status);
       setStatusMessage(payload.message || "");
+    });
+    const disposeProgress = api.onDownloadProgress((payload) => {
+      if (!mounted) return;
+      setProgress({
+        total: Number.isFinite(payload.total) ? payload.total : 0,
+        downloaded: Number.isFinite(payload.downloaded) ? payload.downloaded : 0,
+        failed: Number.isFinite(payload.failed) ? payload.failed : 0,
+        percent: Number.isFinite(payload.percent) ? payload.percent : 0,
+      });
     });
 
     api.getOutputDirectory()
@@ -35,6 +46,7 @@ export function useDownload({ api = getDesktopApi() } = {}) {
       mounted = false;
       disposeLog?.();
       disposeStatus?.();
+      disposeProgress?.();
     };
   }, [api]);
 
@@ -53,6 +65,8 @@ export function useDownload({ api = getDesktopApi() } = {}) {
 
   async function startDownload(podcastId) {
     setLogs([]);
+    setHasStarted(true);
+    setProgress({ total: 0, downloaded: 0, failed: 0, percent: 0 });
     setStatus("running");
     setStatusMessage("");
     try {
@@ -75,8 +89,10 @@ export function useDownload({ api = getDesktopApi() } = {}) {
   return {
     cancelDownload,
     isRunning: status === "running",
+    hasStarted,
     logs,
     outputDirectory,
+    progress,
     selectDirectory,
     startDownload,
     status,

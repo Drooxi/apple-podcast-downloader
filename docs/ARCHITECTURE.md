@@ -71,6 +71,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `src/components/DownloadPanel.jsx` | Download panel composition, destination controls, status and action buttons. |
 | `src/components/PodcastSearch.jsx` | Search input, suggestions and selected podcast card. |
 | `src/components/ActivityLog.jsx` | Scrollable download activity log. |
+| `src/components/DownloadProgress.jsx` | Accessible episode-count progress bar and error counter. |
 | `src/hooks/usePodcastSearch.js` | Debounce, stale-response protection, search cancellation and selection state. |
 | `src/hooks/useDownload.js` | Directory initialization, IPC subscriptions, download actions and status state. |
 | `src/services/desktop-api.js` | Renderer-side bridge availability check. |
@@ -117,8 +118,13 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | --- | --- | --- |
 | `download:log` | `{ message, level }` | Incremental activity log entry. `level` is normally `info` or `error`. |
 | `download:status` | `{ status, message?, result? }` | Lifecycle state: `running`, `completed`, `failed`, or `cancelled`. |
+| `download:progress` | `{ total, downloaded, failed, percent }` | Episode-count progress emitted after RSS parsing and after each episode. |
 
 The preload listener methods return idempotent cleanup functions so React can unsubscribe on unmount. Every handler validates the sender frame before performing a privileged operation. The renderer starts downloads with only `{ podcastId }`; the main process supplies the destination.
+
+Progress is based on successful episode downloads divided by the total RSS item count. Failed items update `failed` but do not increase `downloaded`, so a failed run can finish below 100%.
+
+The renderer keeps the progress panel visible after any attempted run, including lookup/RSS errors that occur before a total is known; that state is shown as 0% until a new run starts.
 
 ## Download state flow
 

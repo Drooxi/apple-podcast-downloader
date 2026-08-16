@@ -8,6 +8,7 @@ const CHANNELS = Object.freeze({
   downloadStart: "download:start",
   downloadCancel: "download:cancel",
   downloadLog: "download:log",
+  downloadProgress: "download:progress",
   downloadStatus: "download:status",
 });
 
@@ -38,6 +39,7 @@ const api = {
     ipcRenderer.invoke(CHANNELS.downloadStart, { podcastId }),
   cancelDownload: () => ipcRenderer.invoke(CHANNELS.downloadCancel),
   onDownloadLog: (callback) => subscribe(CHANNELS.downloadLog, callback),
+  onDownloadProgress: (callback) => subscribe(CHANNELS.downloadProgress, callback),
   onDownloadStatus: (callback) => subscribe(CHANNELS.downloadStatus, callback),
 };
 

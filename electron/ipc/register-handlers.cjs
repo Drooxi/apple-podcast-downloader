@@ -51,6 +51,7 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, 
         podcastId: requirePodcastId(payload),
         senderId: sender.id,
         emitLog: (message, level = "info") => sendToSender(sender, CHANNELS.downloadLog, { message, level }),
+        emitProgress: (progress) => sendToSender(sender, CHANNELS.downloadProgress, progress),
         emitStatus: (status) => sendToSender(sender, CHANNELS.downloadStatus, status),
       });
     }],

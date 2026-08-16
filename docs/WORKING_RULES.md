@@ -36,5 +36,5 @@ After every code change:
 - Production renderer files are served through the secured `app://bundle` protocol, with relative Vite assets and a restrictive CSP.
 - The main process owns the selected output directory; renderer downloads send only the selected podcast ID.
 - Shared domain code lives in `core/`, Electron lifecycle/IPC code in `electron/`, and renderer effects/components in `src/hooks/` and `src/components/`.
-- The Node test suite currently covers 17 cases, including security boundaries and the preload contract.
+- The Node test suite currently covers 20 cases, including security boundaries, download progress and the preload contract.
 - Documentation must remain aligned with the code, even when a change is small.
