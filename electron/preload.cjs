@@ -10,6 +10,8 @@ const CHANNELS = Object.freeze({
   downloadLog: "download:log",
   downloadProgress: "download:progress",
   downloadStatus: "download:status",
+  historyList: "history:list",
+  historyUpdated: "history:updated",
 });
 
 function requireCallback(callback) {
@@ -35,12 +37,14 @@ const api = {
   cancelPodcastSearch: () => ipcRenderer.invoke(CHANNELS.podcastCancelSearch),
   getOutputDirectory: () => ipcRenderer.invoke(CHANNELS.downloadGetDirectory),
   selectOutputDirectory: () => ipcRenderer.invoke(CHANNELS.downloadSelectDirectory),
-  startDownload: ({ podcastId } = {}) =>
-    ipcRenderer.invoke(CHANNELS.downloadStart, { podcastId }),
+  startDownload: ({ podcastId, podcast } = {}) =>
+    ipcRenderer.invoke(CHANNELS.downloadStart, { podcastId, podcast }),
   cancelDownload: () => ipcRenderer.invoke(CHANNELS.downloadCancel),
   onDownloadLog: (callback) => subscribe(CHANNELS.downloadLog, callback),
   onDownloadProgress: (callback) => subscribe(CHANNELS.downloadProgress, callback),
   onDownloadStatus: (callback) => subscribe(CHANNELS.downloadStatus, callback),
+  getPodcastHistory: () => ipcRenderer.invoke(CHANNELS.historyList),
+  onHistoryUpdated: (callback) => subscribe(CHANNELS.historyUpdated, callback),
 };
 
 contextBridge.exposeInMainWorld("podcastDownloader", Object.freeze(api));

@@ -66,15 +66,18 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `electron/services/search-manager.cjs` | Search cancellation and active-search state. |
 | `electron/services/download-manager.cjs` | Download lifecycle, destination ownership and status/log events. |
 | `electron/services/output-directory-store.cjs` | Validated persistence of the selected output directory in Electron `userData`. |
+| `electron/services/podcast-history-store.cjs` | Validated, deduplicated persistence of downloaded podcast metadata in Electron `userData`. |
 | `electron/app-protocol.cjs` | Secure `app://bundle` serving of built renderer files. |
 | `src/main.jsx` | React root mounting and global stylesheet import. |
 | `src/App.jsx` | Page composition and hero layout. |
+| `src/components/PodcastHistory.jsx` | Scrollable history list and selected podcast detail view. |
 | `src/components/DownloadPanel.jsx` | Download panel composition, destination controls, status and action buttons. |
 | `src/components/PodcastSearch.jsx` | Search input, suggestions and selected podcast card. |
-| `src/components/ActivityLog.jsx` | Scrollable download activity log. |
+| `src/components/ActivityLog.jsx` | Collapsible download activity log with an internal scroll area when open. |
 | `src/components/DownloadProgress.jsx` | Accessible episode-count progress bar and error counter. |
 | `src/hooks/usePodcastSearch.js` | Debounce, stale-response protection, search cancellation and selection state. |
 | `src/hooks/useDownload.js` | Directory initialization, IPC subscriptions, download actions and status state. |
+| `src/hooks/usePodcastHistory.js` | History loading, live updates and detail selection state. |
 | `src/services/desktop-api.js` | Renderer-side bridge availability check. |
 | `src/utils/format-path.js` | Destination path display formatting. |
 | `src/styles.css` | Visual system, responsive layout, and status styles. |
@@ -89,6 +92,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `test/security-ipc.test.cjs` | Tests for application protocol path safety, sender origins, payloads and handler cleanup. |
 | `test/managers.test.cjs` | Tests for search cancellation and single-download lifecycle ownership. |
 | `test/output-directory-store.test.cjs` | Tests for destination persistence, fallback and write failures. |
+| `test/podcast-history-store.test.cjs` | Tests for history validation, deduplication, ordering and atomic-write failures. |
 | `test/preload.test.cjs` | VM-based tests for the sandbox-compatible preload API and subscriptions. |
 | `README.md` | Public English setup and usage documentation. |
 | `electron-builder.config.cjs` | Electron Builder targets, application identity, icons, artifact names, entitlements, and conditional notarization configuration. |
@@ -111,7 +115,8 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `podcast:cancel-search` | none | Cancels the active catalog search. |
 | `download:get-directory` | none | Returns the directory currently owned by the main process. |
 | `download:select-directory` | none | Opens a native directory picker, updates main-process state and returns a path or `null`. |
-| `download:start` | `{ podcastId }` | Runs one download using the main-process-owned destination. Rejects invalid payloads or concurrent runs. |
+| `download:start` | `{ podcastId, podcast: { id, name, author, artworkUrl } }` | Runs one download using the main-process-owned destination and records metadata after a successful episode. |
+| `history:list` | none | Returns persisted podcast history, newest first. |
 | `download:cancel` | none | Aborts the active `AbortController`; returns `true` when a run existed. |
 
 ### Main to renderer
@@ -121,14 +126,17 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `download:log` | `{ message, level }` | Incremental activity log entry. `level` is normally `info` or `error`. |
 | `download:status` | `{ status, message?, result? }` | Lifecycle state: `running`, `completed`, `failed`, or `cancelled`. |
 | `download:progress` | `{ total, downloaded, failed, percent }` | Episode-count progress emitted after RSS parsing and after each episode. |
+| `history:updated` | `PodcastHistoryEntry[]` | Sends refreshed history after a qualifying download. |
 
-The preload listener methods return idempotent cleanup functions so React can unsubscribe on unmount. Every handler validates the sender frame before performing a privileged operation. The renderer starts downloads with only `{ podcastId }`; the main process supplies the destination.
+The preload listener methods return idempotent cleanup functions so React can unsubscribe on unmount. Every handler validates the sender frame before performing a privileged operation. The renderer starts downloads with the selected podcast ID and display metadata; the main process supplies the destination and remains the only writer of history.
 
 Progress is based on successful episode downloads divided by the total RSS item count. Failed items update `failed` but do not increase `downloaded`, so a failed run can finish below 100%.
 
-The renderer keeps the progress panel visible after any attempted run, including lookup/RSS errors that occur before a total is known; that state is shown as 0% until a new run starts.
+The renderer keeps the progress panel visible after any attempted run, including lookup/RSS errors that occur before a total is known; that state is shown as 0% until a new run starts. The activity log is collapsed by default, and its contents are revealed on demand with an internal scroll area, keeping the download controls visible while a run is active.
 
 The main process restores the output directory from `userData/output-directory.json`. Invalid, missing or deleted saved directories fall back to the project `episodes/` directory. The renderer never reads or writes this file directly.
+
+The main process stores podcast history in `userData/podcast-history.json`. A podcast is recorded after at least one episode succeeds, including partial failures and cancellation after progress. Entries are deduplicated by Apple ID and sorted newest first. The CLI does not write history because it does not carry display metadata.
 
 ## Download state flow
 

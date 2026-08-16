@@ -23,10 +23,15 @@ function loadPreload() {
 test("le preload n’expose que des wrappers IPC filtrés", async () => {
   const { exposed, invocations, listeners } = loadPreload();
   await exposed.searchPodcasts("test");
-  await exposed.startDownload({ podcastId: "123" });
+  await exposed.startDownload({
+    podcastId: "123",
+    podcast: { id: "123", name: "Podcast", author: "Auteur", artworkUrl: null },
+  });
+  await exposed.getPodcastHistory();
   assert.equal(JSON.stringify(invocations), JSON.stringify([
     { channel: "podcast:search", payload: { term: "test" } },
-    { channel: "download:start", payload: { podcastId: "123" } },
+    { channel: "download:start", payload: { podcastId: "123", podcast: { id: "123", name: "Podcast", author: "Auteur", artworkUrl: null } } },
+    { channel: "history:list", payload: undefined },
   ]));
 
   const callback = () => {};
@@ -40,5 +45,10 @@ test("le preload n’expose que des wrappers IPC filtrés", async () => {
   disposeProgress();
   disposeProgress();
   assert.equal(listeners.has("download:progress"), false);
+  const disposeHistory = exposed.onHistoryUpdated(callback);
+  assert.equal(listeners.has("history:updated"), true);
+  disposeHistory();
+  disposeHistory();
+  assert.equal(listeners.has("history:updated"), false);
   assert.throws(() => exposed.onDownloadLog(null), /callback/);
 });

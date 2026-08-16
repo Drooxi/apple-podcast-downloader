@@ -18,7 +18,7 @@ The application opens on a single React page titled **Apple Podcast Downloader**
 
 The Electron application menu bar is hidden to keep the window focused on the downloader interface.
 
-The default Electron window is sized to `1180×900` with a `860×760` minimum so the initial screen fits without page-level vertical scrolling. Only the activity log has its own internal scroll area.
+The default Electron window is sized to `1180×900` with a `860×760` minimum so the initial screen fits without page-level vertical scrolling. The activity log is collapsed by default and has its own internal scroll area when opened, so progress controls never make lower download controls disappear.
 
 The user can:
 
@@ -30,10 +30,13 @@ The user can:
 6. Watch RSS lookup, episode, and file download messages in the activity log.
 7. Follow an episode-count progress bar showing successful downloads out of the RSS total.
 8. Cancel an active download with **Annuler**.
+9. Switch to **Historique** to review previously downloaded podcasts.
 
 The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection and restored from the user-specific Electron `userData` directory on the next launch.
 
 The interface labels are currently in French, while the public README is in English.
+
+The History view is persisted per Electron installation in `userData/podcast-history.json`. It shows one scrollable card per Apple ID, newest download first, and opens a detail view when a card is clicked without starting a new download. An entry is added after at least one episode succeeds, including partial failures and cancellation after progress.
 
 ## Runtime behavior
 
@@ -68,6 +71,7 @@ Episode-level errors are logged and the remaining episodes continue. A run with 
 - Progress logs and status updates.
 - Episode-count loading bar based on successful downloads.
 - Cancellation through `AbortController`.
+- A persisted History view for podcasts with at least one successful episode download.
 - Basic Node.js unit tests for the domain, IPC boundaries, preload contract and secure application protocol.
 
 ## Desktop distribution
@@ -91,7 +95,7 @@ The optional signing secrets are `WINDOWS_CERTIFICATE_BASE64`, `WINDOWS_CERTIFIC
 
 ## Current validation baseline
 
-- `npm test` contains 26 Node.js tests covering search, downloads, episode progress, destination persistence, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
+- `npm test` contains 31 Node.js tests covering search, downloads, episode progress, destination and history persistence, release tags, HTTP cancellation/redirections, the application protocol, IPC validation, operation managers, and the preload contract.
 - `npm run build` builds the Vite renderer into `dist/`.
 - `npm run dev` starts Vite and Electron together.
 - `npm start` loads the built renderer from `dist/` through the secured `app://bundle` protocol.

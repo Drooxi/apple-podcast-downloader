@@ -63,14 +63,14 @@ export function useDownload({ api = getDesktopApi() } = {}) {
     }
   }
 
-  async function startDownload(podcastId) {
+  async function startDownload(podcast) {
     setLogs([]);
     setHasStarted(true);
     setProgress({ total: 0, downloaded: 0, failed: 0, percent: 0 });
     setStatus("running");
     setStatusMessage("");
     try {
-      await api.startDownload({ podcastId });
+      await api.startDownload({ podcastId: podcast.id, podcast });
     } catch (error) {
       setStatus("failed");
       setStatusMessage(error.message || "Une erreur inattendue est survenue.");

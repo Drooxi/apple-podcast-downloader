@@ -1,10 +1,15 @@
+import { useState } from "react";
 import { usePodcastSearch } from "./hooks/usePodcastSearch.js";
 import { useDownload } from "./hooks/useDownload.js";
 import { DownloadPanel } from "./components/DownloadPanel.jsx";
+import { PodcastHistory } from "./components/PodcastHistory.jsx";
+import { usePodcastHistory } from "./hooks/usePodcastHistory.js";
 
 function App() {
   const search = usePodcastSearch();
   const download = useDownload();
+  const history = usePodcastHistory();
+  const [activeView, setActiveView] = useState("download");
 
   return (
     <main className="app-shell">
@@ -27,7 +32,13 @@ function App() {
           </p>
         </div>
 
-        <DownloadPanel download={download} search={search} />
+        <div className="app-panel-column">
+          <nav className="view-navigation" aria-label="Navigation principale">
+            <button className={activeView === "download" ? "active" : ""} type="button" onClick={() => setActiveView("download")}>Télécharger</button>
+            <button className={activeView === "history" ? "active" : ""} type="button" onClick={() => setActiveView("history")}>Historique</button>
+          </nav>
+          {activeView === "download" ? <DownloadPanel download={download} search={search} /> : <PodcastHistory history={history} />}
+        </div>
       </section>
 
       <footer className="app-footer">

@@ -37,5 +37,6 @@ After every code change:
 - The main process owns the selected output directory; renderer downloads send only the selected podcast ID.
 - Shared domain code lives in `core/`, Electron lifecycle/IPC code in `electron/`, and renderer effects/components in `src/hooks/` and `src/components/`.
 - The selected output directory is persisted by `electron/services/output-directory-store.cjs` in Electron `userData`; persistence tests are part of the Node suite.
-- The Node test suite currently covers 26 cases, including security boundaries, download progress, destination persistence and the preload contract.
+- Downloaded podcast metadata is persisted by `electron/services/podcast-history-store.cjs` in Electron `userData`; history IPC and store behavior are covered by Node tests.
+- The Node test suite currently covers 31 cases, including security boundaries, download progress, destination/history persistence and the preload contract.
 - Documentation must remain aligned with the code, even when a change is small.

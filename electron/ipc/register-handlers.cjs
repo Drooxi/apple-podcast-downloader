@@ -14,11 +14,37 @@ function requirePodcastId(payload) {
   return podcastId;
 }
 
+function requirePodcastMetadata(payload) {
+  const { podcastId, podcast } = requirePayloadObject(payload);
+  const normalizedId = requirePodcastId({ podcastId }).trim();
+  if (!podcast || typeof podcast !== "object" || Array.isArray(podcast)) {
+    throw new Error("Les métadonnées du podcast sont invalides.");
+  }
+  if (typeof podcast.id !== "string" || podcast.id.trim() !== normalizedId) {
+    throw new Error("L’identifiant du podcast est incohérent.");
+  }
+  if (typeof podcast.name !== "string" || !podcast.name.trim()) {
+    throw new Error("Le nom du podcast est invalide.");
+  }
+  if (typeof podcast.author !== "string" || !podcast.author.trim()) {
+    throw new Error("L’auteur du podcast est invalide.");
+  }
+  if (podcast.artworkUrl !== null && (typeof podcast.artworkUrl !== "string" || !/^https:\/\//i.test(podcast.artworkUrl))) {
+    throw new Error("L’illustration du podcast est invalide.");
+  }
+  return {
+    id: normalizedId,
+    name: podcast.name.trim(),
+    author: podcast.author.trim(),
+    artworkUrl: podcast.artworkUrl || null,
+  };
+}
+
 function sendToSender(sender, channel, payload) {
   if (!sender.isDestroyed()) sender.send(channel, payload);
 }
 
-function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, outputDirectoryStore, searchManager, devServerUrl }) {
+function registerIpcHandlers({ dialog, downloadManager, getMainWindow, historyStore, ipcMain, outputDirectoryStore, searchManager, devServerUrl }) {
   const handlers = [
     [CHANNELS.podcastSearch, async (event, payload = {}) => {
       assertTrustedSender(event, devServerUrl);
@@ -33,6 +59,10 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, 
     [CHANNELS.downloadGetDirectory, (event) => {
       assertTrustedSender(event, devServerUrl);
       return downloadManager.getOutputDirectory();
+    }],
+    [CHANNELS.historyList, (event) => {
+      assertTrustedSender(event, devServerUrl);
+      return historyStore?.load() || [];
     }],
     [CHANNELS.downloadSelectDirectory, async (event) => {
       assertTrustedSender(event, devServerUrl);
@@ -49,13 +79,27 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, 
     [CHANNELS.downloadStart, async (event, payload = {}) => {
       assertTrustedSender(event, devServerUrl);
       const sender = event.sender;
-      return downloadManager.start({
-        podcastId: requirePodcastId(payload),
+      const podcast = requirePodcastMetadata(payload);
+      let latestProgress;
+      const outcome = await downloadManager.start({
+        podcastId: podcast.id,
         senderId: sender.id,
         emitLog: (message, level = "info") => sendToSender(sender, CHANNELS.downloadLog, { message, level }),
-        emitProgress: (progress) => sendToSender(sender, CHANNELS.downloadProgress, progress),
+        emitProgress: (progress) => {
+          latestProgress = progress;
+          sendToSender(sender, CHANNELS.downloadProgress, progress);
+        },
         emitStatus: (status) => sendToSender(sender, CHANNELS.downloadStatus, status),
       });
+      const downloaded = outcome.result?.downloaded || latestProgress?.downloaded || 0;
+      if (downloaded > 0 && historyStore) {
+        try {
+          sendToSender(sender, CHANNELS.historyUpdated, historyStore.record(podcast));
+        } catch (error) {
+          sendToSender(sender, CHANNELS.downloadLog, { message: error.message, level: "error" });
+        }
+      }
+      return outcome;
     }],
     [CHANNELS.downloadCancel, (event) => {
       assertTrustedSender(event, devServerUrl);
@@ -72,4 +116,4 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, ipcMain, 
   };
 }
 
-module.exports = { registerIpcHandlers, requirePayloadObject, requirePodcastId };
+module.exports = { registerIpcHandlers, requirePayloadObject, requirePodcastId, requirePodcastMetadata };

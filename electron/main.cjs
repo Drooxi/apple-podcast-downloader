@@ -6,6 +6,7 @@ const { registerIpcHandlers } = require("./ipc/register-handlers.cjs");
 const { createMainWindow } = require("./window.cjs");
 const { DownloadManager } = require("./services/download-manager.cjs");
 const { OutputDirectoryStore } = require("./services/output-directory-store.cjs");
+const { PodcastHistoryStore } = require("./services/podcast-history-store.cjs");
 const { SearchManager } = require("./services/search-manager.cjs");
 
 const defaultOutputDirectory = path.resolve(__dirname, "..", "episodes");
@@ -36,6 +37,7 @@ app.whenReady().then(() => {
   registerAppProtocol(protocol, net, rendererDirectory);
   searchManager = new SearchManager();
   const outputDirectoryStore = new OutputDirectoryStore({ userDataDirectory: app.getPath("userData") });
+  const historyStore = new PodcastHistoryStore({ userDataDirectory: app.getPath("userData") });
   downloadManager = new DownloadManager({
     outputDirectory: outputDirectoryStore.load(defaultOutputDirectory),
   });
@@ -43,6 +45,7 @@ app.whenReady().then(() => {
     dialog,
     downloadManager,
     getMainWindow: () => mainWindow,
+    historyStore,
     ipcMain,
     outputDirectoryStore,
     searchManager,

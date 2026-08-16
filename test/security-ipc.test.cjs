@@ -7,6 +7,7 @@ const { isTrustedSender } = require("../electron/ipc/validate-sender.cjs");
 const {
   requirePayloadObject,
   requirePodcastId,
+  requirePodcastMetadata,
   registerIpcHandlers,
 } = require("../electron/ipc/register-handlers.cjs");
 
@@ -29,8 +30,13 @@ test("isTrustedSender refuse une origine ou une frame secondaire inconnue", () =
 test("les payloads IPC sont strictement validés", () => {
   assert.deepEqual(requirePayloadObject({ podcastId: "123" }), { podcastId: "123" });
   assert.equal(requirePodcastId({ podcastId: " 123 " }), " 123 ");
+  assert.deepEqual(requirePodcastMetadata({
+    podcastId: "123",
+    podcast: { id: "123", name: "Podcast", author: "Auteur", artworkUrl: null },
+  }), { id: "123", name: "Podcast", author: "Auteur", artworkUrl: null });
   assert.throws(() => requirePayloadObject(null), /Payload IPC/);
   assert.throws(() => requirePodcastId({ podcastId: "abc" }), /podcast doit être sélectionné/);
+  assert.throws(() => requirePodcastMetadata({ podcastId: "123", podcast: { id: "999", name: "Podcast", author: "Auteur", artworkUrl: null } }), /incohérent/);
 });
 
 test("registerIpcHandlers valide l’expéditeur et supprime ses handlers", async () => {
@@ -61,19 +67,57 @@ test("registerIpcHandlers valide l’expéditeur et supprime ses handlers", asyn
   assert.equal(handlers.get("download:get-directory")(event), path.resolve("episodes"));
   await assert.rejects(Promise.resolve().then(() => handlers.get("download:get-directory")({ senderFrame: { url: "https://example.com" } })), /Origine IPC/);
   await assert.rejects(Promise.resolve().then(() => handlers.get("download:start")(event, {})), /podcast doit être sélectionné/);
-  await handlers.get("download:start")(event, { podcastId: "123" });
+  const selectedPodcast = { id: "123", name: "Podcast", author: "Auteur", artworkUrl: null };
+  await handlers.get("download:start")(event, { podcastId: "123", podcast: selectedPodcast });
   assert.equal(messages.some(({ channel }) => channel === "download:progress"), false);
   downloadManager.start = async (options) => {
     options.emitProgress({ total: 2, downloaded: 1, failed: 0, percent: 50 });
     return { status: "completed" };
   };
-  await handlers.get("download:start")(event, { podcastId: "123" });
+  await handlers.get("download:start")(event, { podcastId: "123", podcast: selectedPodcast });
   assert.deepEqual(messages.find(({ channel }) => channel === "download:progress"), {
     channel: "download:progress",
     payload: { total: 2, downloaded: 1, failed: 0, percent: 50 },
   });
   cleanup();
   assert.equal(handlers.size, 0);
+});
+
+test("history:list et history:updated utilisent le store principal", async () => {
+  const handlers = new Map();
+  const ipcMain = { handle: (channel, handler) => handlers.set(channel, handler), removeHandler: () => {} };
+  const history = [{ id: "123", name: "Podcast", author: "Auteur", artworkUrl: null, downloadedAt: "2026-08-16T12:00:00.000Z" }];
+  const messages = [];
+  const sender = { id: 10, isDestroyed: () => false, send: (channel, payload) => messages.push({ channel, payload }) };
+  const store = { load: () => history, record: () => history };
+  const downloadManager = {
+    getOutputDirectory: () => path.resolve("episodes"),
+    setOutputDirectory: (value) => value,
+    start: async ({ emitProgress }) => {
+      emitProgress({ total: 1, downloaded: 1, failed: 0, percent: 100 });
+      return { status: "completed", result: { total: 1, downloaded: 1, failed: 0 } };
+    },
+    cancel: () => false,
+    dispose: () => {},
+  };
+  const searchManager = { searchPodcasts: async () => [], cancel: () => true, dispose: () => {} };
+  const cleanup = registerIpcHandlers({
+    dialog: { showOpenDialog: async () => ({ canceled: true, filePaths: [] }) },
+    downloadManager,
+    getMainWindow: () => null,
+    historyStore: store,
+    ipcMain,
+    outputDirectoryStore: null,
+    searchManager,
+  });
+  const event = { sender, senderFrame: { url: "app://bundle/index.html" } };
+  assert.deepEqual(handlers.get("history:list")(event), history);
+  await handlers.get("download:start")(event, { podcastId: "123", podcast: history[0] });
+  assert.deepEqual(messages.find(({ channel }) => channel === "history:updated"), {
+    channel: "history:updated",
+    payload: history,
+  });
+  cleanup();
 });
 
 test("download:select-directory persiste avant de changer le dossier actif", async () => {

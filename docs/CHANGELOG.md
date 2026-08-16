@@ -2,6 +2,22 @@
 
 ## 2026-08-16
 
+### Collapsible activity log
+
+- Collapsed the activity log by default to preserve the download panel layout when progress and cancellation controls are visible.
+- Added an accessible toggle and retained an internal scroll area for the log content when opened.
+
+## 2026-08-16
+
+### Podcast download history
+
+- Added a persisted `userData/podcast-history.json` store with validation, atomic writes, Apple ID deduplication and newest-first ordering.
+- Added `history:list` and `history:updated` IPC contracts and podcast metadata validation for `download:start`.
+- Added Télécharger/Historique navigation, a scrollable history list, artwork cards and a non-downloading detail view.
+- Records partial and cancelled runs when at least one episode was downloaded; the Node suite now contains 31 tests.
+
+## 2026-08-16
+
 ### Output directory persistence
 
 - Persisted the selected download directory in Electron `userData/output-directory.json`.

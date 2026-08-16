@@ -36,6 +36,8 @@ The download bar reports successful episodes divided by the total number of RSS 
 
 After any attempted run, the renderer retains the progress panel, including a 0% state when lookup or RSS loading fails before the episode total is available.
 
+The activity log is collapsed by default so adding progress and cancellation controls does not hide the lower part of the download panel. Opening the log reveals its existing bounded internal scroll area.
+
 ## AbortController cancellation
 
 The main process creates one `AbortController` per run. Network requests receive its signal, the current stream is destroyed when cancellation occurs, and the partial destination file is removed.
@@ -51,6 +53,12 @@ The last selected directory is persisted as a minimal JSON file under Electronâ€
 Window cleanup captures the sender identifier before destruction and cancels operations without reading `webContents` from the `closed` event.
 
 ## Electron application protocol
+
+## Podcast history
+
+The application persists podcast-level history in `userData/podcast-history.json`, separately from the output-directory setting. Entries are deduplicated by Apple ID and ordered by the most recent successful download attempt. A podcast is recorded when at least one episode has downloaded, including partial failures and cancellation after progress; searches, pre-download failures and empty cancellations do not create entries.
+
+The main process owns validation and writes through an atomic temporary-file replacement. The renderer receives `history:list` and `history:updated` through narrow preload methods. Clicking a history card only opens its details and never changes the active search selection or starts a download. The CLI does not populate this store because it does not carry the UI metadata contract.
 
 The packaged renderer is served through the secured standard `app://bundle` protocol. The handler maps only files inside `dist/`, rejects traversal and unknown hosts, and allows the main process to validate renderer origins without relying on `file://`.
 

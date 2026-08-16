@@ -8,4 +8,6 @@ module.exports = Object.freeze({
   downloadLog: "download:log",
   downloadProgress: "download:progress",
   downloadStatus: "download:status",
+  historyList: "history:list",
+  historyUpdated: "history:updated",
 });

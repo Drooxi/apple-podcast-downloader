@@ -11,9 +11,10 @@ The app provides a simple React interface inspired by Apple Podcasts, with podca
 - Podcast selection with name, author, and artwork preview.
 - Apple Podcasts RSS feed lookup.
 - MP3 episode downloads to a folder of your choice.
-- Live activity log during downloads.
+- Collapsible live activity log during downloads.
 - Episode-count loading bar with download percentage.
 - Download cancellation with partial-file cleanup.
+- Persisted History screen for podcasts with at least one downloaded episode.
 - Secure Electron IPC bridge with `contextIsolation` enabled and Node integration disabled.
 - Sandboxed renderer served through a restricted `app://bundle` protocol in packaged builds, with relative assets and a restrictive CSP.
 - Command-line compatible RSS downloader.
@@ -115,6 +116,7 @@ Certificates are decoded only on the GitHub runner and are never committed to th
 5. Click **Lancer le téléchargement**.
 6. Follow the live activity log and episode-count progress bar.
 7. Click **Annuler** if the download needs to be stopped.
+8. Open **Historique** to see previously downloaded podcasts; entries are persisted per user and sorted by most recent download.
 
 The default destination is the project’s `episodes/` directory. After choosing another folder, the application restores it automatically on the next launch. If the saved folder no longer exists, the application falls back to `episodes/`. Downloaded MP3 files are ignored by Git.
 
@@ -136,7 +138,7 @@ The podcast ID is currently defined in `rss-extract.js` as `1463322273`.
 
 ## Testing
 
-Run the 26 automated Node.js tests with:
+Run the 31 automated Node.js tests with:
 
 ```bash
 npm test
@@ -151,7 +153,7 @@ electron/
   preload.cjs    Secure renderer bridge
   app-protocol.cjs Secure app://bundle renderer protocol
   ipc/           IPC channels, sender validation, and handlers
-  services/      Search, download lifecycle, and output-directory persistence managers
+  services/      Search, download lifecycle, and output-directory/history persistence managers
 src/
   App.jsx        Main page composition
   components/    Download, search, artwork, and activity-log components

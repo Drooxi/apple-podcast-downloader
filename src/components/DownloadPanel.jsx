@@ -39,7 +39,7 @@ export function DownloadPanel({ download, search }) {
       </div>
 
       <div className="actions">
-        <button className="primary-button" type="button" onClick={() => download.startDownload(search.selectedPodcast.id)} disabled={!canStart}>
+        <button className="primary-button" type="button" onClick={() => download.startDownload(search.selectedPodcast)} disabled={!canStart}>
           <span>{download.isRunning ? "Téléchargement…" : "Lancer le téléchargement"}</span>
           <span className="button-arrow" aria-hidden="true">→</span>
         </button>
