@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getDesktopApi } from "../services/desktop-api.js";
 
 export function usePodcastSearch({ api = getDesktopApi() } = {}) {
+  // ── Apple search state ──────────────────────────────────────────────────
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchState, setSearchState] = useState("idle");
@@ -9,7 +10,14 @@ export function usePodcastSearch({ api = getDesktopApi() } = {}) {
   const [selectedPodcast, setSelectedPodcast] = useState(null);
   const requestId = useRef(0);
 
+  // ── RSS mode state ───────────────────────────────────────────────────────
+  const [rssMode, setRssMode] = useState(false);
+  const [rssUrl, setRssUrl] = useState("");
+
+  // ── Apple search effect ──────────────────────────────────────────────────
   useEffect(() => {
+    if (rssMode) return undefined;
+
     const term = searchTerm.trim();
     const currentRequestId = ++requestId.current;
 
@@ -49,7 +57,7 @@ export function usePodcastSearch({ api = getDesktopApi() } = {}) {
       window.clearTimeout(timer);
       void api.cancelPodcastSearch().catch(() => {});
     };
-  }, [api, searchTerm, selectedPodcast]);
+  }, [api, rssMode, searchTerm, selectedPodcast]);
 
   function handleSearchChange(event) {
     const value = event.target.value;
@@ -73,7 +81,29 @@ export function usePodcastSearch({ api = getDesktopApi() } = {}) {
     setSearchError("");
   }
 
+  // ── RSS mode helpers ─────────────────────────────────────────────────────
+  function enableRssMode() {
+    // Cancel any pending Apple search before switching
+    void api.cancelPodcastSearch().catch(() => {});
+    setRssMode(true);
+    setSearchResults([]);
+    setSearchState("idle");
+    setSearchError("");
+    setSelectedPodcast(null);
+    setSearchTerm("");
+  }
+
+  function disableRssMode() {
+    setRssMode(false);
+    setRssUrl("");
+  }
+
+  function handleRssUrlChange(event) {
+    setRssUrl(event.target.value);
+  }
+
   return {
+    // Apple search
     changePodcast,
     handleSearchChange,
     searchError,
@@ -82,5 +112,11 @@ export function usePodcastSearch({ api = getDesktopApi() } = {}) {
     searchTerm,
     selectedPodcast,
     selectPodcast,
+    // RSS mode
+    rssMode,
+    rssUrl,
+    handleRssUrlChange,
+    enableRssMode,
+    disableRssMode,
   };
 }

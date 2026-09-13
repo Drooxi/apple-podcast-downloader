@@ -13,7 +13,17 @@ const STATUS_LABELS = {
 
 export function DownloadPanel({ download, search }) {
   const statusLabel = STATUS_LABELS[download.status] || STATUS_LABELS.idle;
-  const canStart = Boolean(download.outputDirectory && search.selectedPodcast?.id && !download.isRunning);
+  const canStartApple = Boolean(download.outputDirectory && search.selectedPodcast?.id && !download.isRunning);
+  const canStartRss = Boolean(download.outputDirectory && search.rssMode && search.rssUrl.trim() && !download.isRunning);
+  const canStart = canStartApple || canStartRss;
+
+  function handleStart() {
+    if (search.rssMode) {
+      download.startDownloadFromRss(search.rssUrl.trim());
+    } else {
+      download.startDownload(search.selectedPodcast);
+    }
+  }
 
   return (
     <div className="download-panel">
@@ -39,7 +49,7 @@ export function DownloadPanel({ download, search }) {
       </div>
 
       <div className="actions">
-        <button className="primary-button" type="button" onClick={() => download.startDownload(search.selectedPodcast)} disabled={!canStart}>
+        <button className="primary-button" type="button" onClick={handleStart} disabled={!canStart}>
           <span>{download.isRunning ? "Téléchargement…" : "Lancer le téléchargement"}</span>
           <span className="button-arrow" aria-hidden="true">→</span>
         </button>
@@ -52,3 +62,4 @@ export function DownloadPanel({ download, search }) {
     </div>
   );
 }
+

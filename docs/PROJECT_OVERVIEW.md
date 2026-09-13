@@ -22,17 +22,18 @@ The default Electron window is sized to `1180×900` with a `860×760` minimum so
 
 The user can:
 
-1. Search Apple Podcasts by name from the French storefront.
-2. Select a suggestion showing the podcast name, author, and artwork.
-3. Review the selected podcast before downloading.
-4. Review the default `episodes/` output directory or select another directory through the native Electron folder picker.
-5. Start the download with **Lancer le téléchargement**.
-6. Watch RSS lookup, episode, and file download messages in the activity log.
-7. Follow an episode-count progress bar showing successful downloads out of the RSS total.
-8. Cancel an active download with **Annuler**.
-9. Switch to **Historique** to review previously downloaded podcasts.
+1. **Search by name** — Search Apple Podcasts by name from the French storefront (default mode).
+2. **Or enter an RSS URL directly** — Switch to the RSS URL mode by clicking the **URL RSS** tab and paste the feed URL directly.
+3. Select a suggestion showing the podcast name, author, and artwork (search mode only).
+4. Review the selected podcast before downloading.
+5. Review the default `episodes/` output directory or select another directory through the native Electron folder picker.
+6. Start the download with **Lancer le téléchargement**.
+7. Watch RSS lookup, episode, and file download messages in the activity log.
+8. Follow an episode-count progress bar showing successful downloads out of the RSS total.
+9. Cancel an active download with **Annuler**.
+10. Switch to **Historique** to review previously downloaded podcasts.
 
-The interface opens without a podcast selected. Search suggestions start after three characters and a 500 ms debounce. Results are displayed as an overlay inside the download panel, with an internal scroll when the list is taller than the available result area, so the rest of the interface does not move while searching. The selected Apple ID is kept in the application state and passed to the download flow. The destination directory is held by the Electron main process after selection and restored from the user-specific Electron `userData` directory on the next launch.
+The interface opens without a podcast selected. A two-tab toggle (**Rechercher** / **URL RSS**) sits above the search input. In search mode, suggestions start after three characters and a 500 ms debounce. In RSS URL mode, the Apple search is hidden and replaced by a single URL input; the download button enables as soon as a non-empty URL is provided. Switching modes resets the opposite mode's state. History recording is not performed for RSS-mode downloads (no Apple ID metadata is available).
 
 The interface labels are currently in French, while the public README is in English.
 
@@ -40,9 +41,9 @@ The History view is persisted per Electron installation in `userData/podcast-his
 
 ## Runtime behavior
 
-The command-line downloader keeps `1463322273` as its default podcast ID, defined as `DEFAULT_PODCAST_ID` in `rss-extract.js`. The Electron interface requires the user to select an Apple Podcasts result and uses that result’s ID.
+The command-line downloader keeps `1463322273` as its default podcast ID, defined as `DEFAULT_PODCAST_ID` in `rss-extract.js`. The Electron interface requires the user to select an Apple Podcasts result and uses that result's ID.
 
-The downloader:
+The downloader (Apple search mode):
 
 1. Searches the Apple iTunes Search API when the user types at least three characters.
 2. Normalizes valid podcast results into an Apple ID, name, author, and artwork URL.
@@ -55,6 +56,13 @@ The downloader:
 9. Removes a partial file when a download fails or is cancelled.
 10. Reports totals as `{ total, downloaded, failed }`.
 11. Emits progress as `{ total, downloaded, failed, percent }` after RSS parsing and after each episode.
+
+The downloader (RSS URL mode):
+
+1. Validates that the provided URL starts with `http://` or `https://`.
+2. Fetches and parses the RSS XML with `fast-xml-parser` directly from that URL.
+3. Continues from step 6 of the Apple flow (iterates episodes, sanitizes titles, downloads files).
+4. No Apple lookup or history recording occurs in this mode.
 
 Episode-level errors are logged and the remaining episodes continue. A run with one or more episode errors ends with a failed UI status. A lookup, RSS, or cancellation error stops the run immediately.
 

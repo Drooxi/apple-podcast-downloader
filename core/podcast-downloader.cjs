@@ -145,10 +145,111 @@ async function runDownload({
   return { total: items.length, downloaded, failed };
 }
 
+function validateRssUrl(rssUrl) {
+  const normalized = String(rssUrl ?? "").trim();
+  if (!/^https?:\/\//i.test(normalized)) {
+    throw new Error("L'URL du flux RSS doit commencer par http:// ou https://");
+  }
+  return normalized;
+}
+
+async function runDownloadFromRss({
+  outputDir = path.resolve(process.cwd(), "episodes"),
+  rssUrl,
+  onLog = (message, level = "info") =>
+    console[level === "error" ? "error" : "log"](message),
+  onProgress = () => {},
+  requestTextImpl = requestText,
+  downloadFileImpl = downloadFile,
+  signal,
+} = {}) {
+  const log = (message, level = "info") => onLog(message, level);
+  const reportProgress = (total, downloaded, failed) => onProgress({
+    total,
+    downloaded,
+    failed,
+    percent: total > 0 ? Math.round((downloaded / total) * 100) : 0,
+  });
+  throwIfAborted(signal, DownloadCancelledError);
+  const normalizedRssUrl = validateRssUrl(rssUrl);
+
+  fs.mkdirSync(outputDir, { recursive: true });
+  log(`Flux : ${normalizedRssUrl}`);
+
+  let xml;
+  try {
+    xml = await requestTextImpl(normalizedRssUrl, {
+      signal,
+      createAbortError: () => new DownloadCancelledError(),
+    });
+  } catch (error) {
+    if (isCancellationError(error, signal)) {
+      throw new DownloadCancelledError();
+    }
+    throw error;
+  }
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+  });
+  const rss = parser.parse(xml);
+  let items = rss?.rss?.channel?.item || [];
+  if (!Array.isArray(items)) items = [items];
+
+  log(`${items.length} épisode(s) trouvé(s).`);
+
+  let downloaded = 0;
+  let failed = 0;
+  reportProgress(items.length, downloaded, failed);
+
+  for (const episode of items) {
+    throwIfAborted(signal, DownloadCancelledError);
+
+    const title = String(episode.title || "Épisode sans titre");
+    log(`Épisode : ${title}`);
+
+    if (episode.link) log(`Lien : ${episode.link}`);
+
+    if (!episode.enclosure?.url) {
+      log("Aucun fichier audio trouvé pour cet épisode.", "error");
+      failed += 1;
+      reportProgress(items.length, downloaded, failed);
+      continue;
+    }
+
+    const filename = `${sanitizeFilename(title) || "episode"}.mp3`;
+    const filepath = path.join(outputDir, filename);
+    log(`Téléchargement : ${filename}`);
+
+    try {
+      await downloadFileImpl(episode.enclosure.url, filepath, {
+        signal,
+        createAbortError: () => new DownloadCancelledError(),
+      });
+      downloaded += 1;
+      log("Téléchargement terminé.");
+      reportProgress(items.length, downloaded, failed);
+    } catch (error) {
+      if (isCancellationError(error, signal)) {
+        throw new DownloadCancelledError();
+      }
+      failed += 1;
+      log(`Erreur : ${error.message}`, "error");
+      reportProgress(items.length, downloaded, failed);
+    }
+  }
+
+  log(`Fini — ${downloaded} épisode(s) téléchargé(s), ${failed} erreur(s).`);
+  return { total: items.length, downloaded, failed };
+}
+
 module.exports = {
   DEFAULT_PODCAST_ID,
   DownloadCancelledError,
   runDownload,
+  runDownloadFromRss,
   sanitizeFilename,
   validatePodcastId,
+  validateRssUrl,
 };

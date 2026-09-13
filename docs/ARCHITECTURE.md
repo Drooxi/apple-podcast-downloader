@@ -83,7 +83,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `src/styles.css` | Visual system, responsive layout, and status styles. |
 | `core/http-client.cjs` | Shared HTTPS text/file requests, redirects, cancellation and partial-file cleanup. |
 | `core/podcast-search.cjs` | Apple catalog search URL construction and result normalization. |
-| `core/podcast-downloader.cjs` | Apple lookup, RSS parsing, sequential downloads and cancellation. |
+| `core/podcast-downloader.cjs` | Apple lookup, RSS parsing, sequential downloads, cancellation, and direct-RSS download path. |
 | `rss-extract.js` | CLI entry point and compatibility façade for the downloader core. |
 | `podcast-search.js` | Compatibility façade for the podcast search core. |
 | `test/podcast-search.test.cjs` | Node.js tests for search parameters, normalization, and search cancellation. |
@@ -116,6 +116,7 @@ The `make` script passes `--publish never` explicitly. Platform jobs only genera
 | `download:get-directory` | none | Returns the directory currently owned by the main process. |
 | `download:select-directory` | none | Opens a native directory picker, updates main-process state and returns a path or `null`. |
 | `download:start` | `{ podcastId, podcast: { id, name, author, artworkUrl } }` | Runs one download using the main-process-owned destination and records metadata after a successful episode. |
+| `download:start-rss` | `{ rssUrl }` | Runs one download directly from the given RSS URL; skips Apple lookup and history recording. |
 | `history:list` | none | Returns persisted podcast history, newest first. |
 | `download:cancel` | none | Aborts the active `AbortController`; returns `true` when a run existed. |
 

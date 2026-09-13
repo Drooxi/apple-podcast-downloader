@@ -6,6 +6,7 @@ const CHANNELS = Object.freeze({
   downloadGetDirectory: "download:get-directory",
   downloadSelectDirectory: "download:select-directory",
   downloadStart: "download:start",
+  downloadStartRss: "download:start-rss",
   downloadCancel: "download:cancel",
   downloadLog: "download:log",
   downloadProgress: "download:progress",
@@ -39,6 +40,8 @@ const api = {
   selectOutputDirectory: () => ipcRenderer.invoke(CHANNELS.downloadSelectDirectory),
   startDownload: ({ podcastId, podcast } = {}) =>
     ipcRenderer.invoke(CHANNELS.downloadStart, { podcastId, podcast }),
+  startDownloadFromRss: ({ rssUrl } = {}) =>
+    ipcRenderer.invoke(CHANNELS.downloadStartRss, { rssUrl }),
   cancelDownload: () => ipcRenderer.invoke(CHANNELS.downloadCancel),
   onDownloadLog: (callback) => subscribe(CHANNELS.downloadLog, callback),
   onDownloadProgress: (callback) => subscribe(CHANNELS.downloadProgress, callback),
@@ -48,3 +51,4 @@ const api = {
 };
 
 contextBridge.exposeInMainWorld("podcastDownloader", Object.freeze(api));
+
