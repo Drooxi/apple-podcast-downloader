@@ -72,6 +72,11 @@ h2 { margin: 0; font-size: 24px; letter-spacing: -.04em; }
 @keyframes pulse { 50% { opacity: .4; } }
 
 .podcast-search-section { position: relative; margin-top: 28px; }
+.search-mode-toggle { display: flex; gap: 5px; margin-bottom: 14px; padding: 4px; border: 1px solid rgba(255,255,255,.1); border-radius: 11px; background: rgba(13,7,24,.4); }
+.mode-tab { flex: 1; padding: 7px 10px; border: 0; border-radius: 8px; cursor: pointer; color: #9f93a7; background: transparent; font-size: 11px; font-weight: 500; transition: .2s ease; }
+.mode-tab:hover:not(:disabled) { color: #fff8fc; background: rgba(255,255,255,.07); }
+.mode-tab-active { color: #fff8fc !important; background: linear-gradient(100deg, rgba(244,63,94,.65), rgba(168,85,247,.65)) !important; box-shadow: 0 3px 10px rgba(244,63,94,.15); }
+.mode-tab:disabled { cursor: not-allowed; opacity: .45; }
 .search-label { display: block; margin-bottom: 9px; }
 .search-input-shell { display: flex; align-items: center; gap: 10px; padding: 0 15px; border: 1px solid rgba(255,255,255,.13); border-radius: 14px; background: rgba(13, 7, 24, .45); transition: border-color .2s ease, box-shadow .2s ease; }
 .search-input-shell:focus-within { border-color: rgba(251, 113, 133, .7); box-shadow: 0 0 0 4px rgba(244, 63, 94, .1); }

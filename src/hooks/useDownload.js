@@ -77,6 +77,20 @@ export function useDownload({ api = getDesktopApi() } = {}) {
     }
   }
 
+  async function startDownloadFromRss(rssUrl) {
+    setLogs([]);
+    setHasStarted(true);
+    setProgress({ total: 0, downloaded: 0, failed: 0, percent: 0 });
+    setStatus("running");
+    setStatusMessage("");
+    try {
+      await api.startDownloadFromRss({ rssUrl });
+    } catch (error) {
+      setStatus("failed");
+      setStatusMessage(error.message || "Une erreur inattendue est survenue.");
+    }
+  }
+
   async function cancelDownload() {
     if (status !== "running") return;
     try {
@@ -95,6 +109,7 @@ export function useDownload({ api = getDesktopApi() } = {}) {
     progress,
     selectDirectory,
     startDownload,
+    startDownloadFromRss,
     status,
     statusMessage,
   };

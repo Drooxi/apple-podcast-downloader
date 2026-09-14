@@ -1,5 +1,21 @@
 # Documentation and Implementation Changelog
 
+## 2026-09-13
+
+### Direct RSS URL input mode
+
+- Added a two-tab toggle (**Rechercher** / **URL RSS**) to the podcast search section so users can bypass Apple search and paste a feed URL directly.
+- Added `runDownloadFromRss` and `validateRssUrl` to `core/podcast-downloader.cjs` to fetch and parse the RSS feed directly from a given URL.
+- Added `startFromRss` method to `electron/services/download-manager.cjs`.
+- Added `download:start-rss` IPC channel in `electron/ipc/channels.cjs`, a `requireRssUrl` validator in `electron/ipc/register-handlers.cjs`, and a matching `startDownloadFromRss` method in `electron/preload.cjs`.
+- Extended `usePodcastSearch` hook with `rssMode`, `rssUrl`, `enableRssMode`, `disableRssMode`, and `handleRssUrlChange`.
+- Extended `useDownload` hook with `startDownloadFromRss`.
+- Updated `PodcastSearch` component to render mode toggle and RSS URL input.
+- Updated `DownloadPanel` to route the download action based on the active mode.
+- Added CSS styles for the mode toggle tabs (`.search-mode-toggle`, `.mode-tab`, `.mode-tab-active`).
+- RSS-mode downloads do not record history (no Apple ID metadata).
+- All 31 existing tests continue to pass.
+
 ## 1.2.0 - 2026-08-17
 
 - Bumped the application version and release tag target to `v1.2.0`.

@@ -4,6 +4,7 @@ module.exports = Object.freeze({
   downloadGetDirectory: "download:get-directory",
   downloadSelectDirectory: "download:select-directory",
   downloadStart: "download:start",
+  downloadStartRss: "download:start-rss",
   downloadCancel: "download:cancel",
   downloadLog: "download:log",
   downloadProgress: "download:progress",

@@ -1,5 +1,6 @@
 const CHANNELS = require("./channels.cjs");
 const { assertTrustedSender } = require("./validate-sender.cjs");
+const { validateRssUrl } = require("../../core/podcast-downloader.cjs");
 
 function requirePayloadObject(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("Payload IPC invalide.");
@@ -21,16 +22,16 @@ function requirePodcastMetadata(payload) {
     throw new Error("Les métadonnées du podcast sont invalides.");
   }
   if (typeof podcast.id !== "string" || podcast.id.trim() !== normalizedId) {
-    throw new Error("L’identifiant du podcast est incohérent.");
+    throw new Error("L'identifiant du podcast est incohérent.");
   }
   if (typeof podcast.name !== "string" || !podcast.name.trim()) {
     throw new Error("Le nom du podcast est invalide.");
   }
   if (typeof podcast.author !== "string" || !podcast.author.trim()) {
-    throw new Error("L’auteur du podcast est invalide.");
+    throw new Error("L'auteur du podcast est invalide.");
   }
   if (podcast.artworkUrl !== null && (typeof podcast.artworkUrl !== "string" || !/^https:\/\//i.test(podcast.artworkUrl))) {
-    throw new Error("L’illustration du podcast est invalide.");
+    throw new Error("L'illustration du podcast est invalide.");
   }
   return {
     id: normalizedId,
@@ -38,6 +39,12 @@ function requirePodcastMetadata(payload) {
     author: podcast.author.trim(),
     artworkUrl: podcast.artworkUrl || null,
   };
+}
+
+function requireRssUrl(payload) {
+  const { rssUrl } = requirePayloadObject(payload);
+  if (typeof rssUrl !== "string") throw new Error("URL RSS invalide.");
+  return validateRssUrl(rssUrl);
 }
 
 function sendToSender(sender, channel, payload) {
@@ -101,6 +108,19 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, historySt
       }
       return outcome;
     }],
+    [CHANNELS.downloadStartRss, async (event, payload = {}) => {
+      assertTrustedSender(event, devServerUrl);
+      const sender = event.sender;
+      const rssUrl = requireRssUrl(payload);
+      const outcome = await downloadManager.startFromRss({
+        rssUrl,
+        senderId: sender.id,
+        emitLog: (message, level = "info") => sendToSender(sender, CHANNELS.downloadLog, { message, level }),
+        emitProgress: (progress) => sendToSender(sender, CHANNELS.downloadProgress, progress),
+        emitStatus: (status) => sendToSender(sender, CHANNELS.downloadStatus, status),
+      });
+      return outcome;
+    }],
     [CHANNELS.downloadCancel, (event) => {
       assertTrustedSender(event, devServerUrl);
       return downloadManager.cancel(event.sender.id);
@@ -116,4 +136,5 @@ function registerIpcHandlers({ dialog, downloadManager, getMainWindow, historySt
   };
 }
 
-module.exports = { registerIpcHandlers, requirePayloadObject, requirePodcastId, requirePodcastMetadata };
+module.exports = { registerIpcHandlers, requirePayloadObject, requirePodcastId, requirePodcastMetadata, requireRssUrl };
+

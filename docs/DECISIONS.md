@@ -18,13 +18,19 @@ The downloader remains executable as a CLI through its `require.main === module`
 
 ## Apple catalog search
 
-Podcast selection uses Apple’s iTunes Search API in the Electron main process. Searches use the French storefront (`country=fr`), `media=podcast`, `entity=podcast`, `lang=fr_fr`, and a limit of eight results. The renderer starts searching after three characters with a 500 ms debounce.
+Podcast selection uses Apple's iTunes Search API in the Electron main process. Searches use the French storefront (`country=fr`), `media=podcast`, `entity=podcast`, `lang=fr_fr`, and a limit of eight results. The renderer starts searching after three characters with a 500 ms debounce.
 
 Search results are normalized to the smallest UI contract needed by the application: Apple ID, podcast name, author, and artwork URL. The renderer ignores stale responses and the main process aborts the previous request when a new search begins.
 
 The UI has no default selection. The CLI retains the existing default ID for backward compatibility, while Electron requires a selected numeric Apple ID before starting a download.
 
 Search suggestions are positioned as an overlay inside the download panel rather than in the normal document flow. The list is capped at 340 px and scrolls internally when needed. This keeps the destination, action, and activity sections stable while results are visible.
+
+## Direct RSS URL input
+
+The **URL RSS** mode lets users bypass the Apple search entirely and paste a feed URL directly. The IPC channel `download:start-rss` validates that the URL begins with `http://` or `https://` and then runs the same episode-download loop as the Apple path, skipping the iTunes lookup step.
+
+This mode does not record a history entry because no Apple ID or display metadata is available. The mode is selected through a two-tab toggle (`Rechercher` / `URL RSS`) above the search input; switching resets the opposite mode's state so both cannot be active simultaneously.
 
 ## Sequential downloads
 
