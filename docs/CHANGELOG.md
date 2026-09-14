@@ -1,5 +1,9 @@
 # Documentation and Implementation Changelog
 
+## 1.3.0 - 2026-09-14
+
+- Bumped the application version and release tag target to `v1.3.0`.
+
 ## 2026-09-13
 
 ### Direct RSS URL input mode
